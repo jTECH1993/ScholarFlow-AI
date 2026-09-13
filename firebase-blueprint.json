@@ -1,0 +1,99 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Registered SaaS user profile with personalized RAG perspective and settings",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string" },
+        "organization": { "type": "string" },
+        "perspectiveId": { "type": "string" },
+        "perspectiveName": { "type": "string" },
+        "perspectiveCustomInstructions": { "type": "string" },
+        "preferredModalityFilter": { "type": "string" },
+        "retrievalStrategy": { "type": "string" },
+        "topK": { "type": "number" },
+        "similarityThreshold": { "type": "number" },
+        "temperature": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "lastActive": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    },
+    "CustomPaper": {
+      "title": "CustomPaper",
+      "description": "User's privately ingested research paper or clinical protocol",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "authors": { "type": "string" },
+        "year": { "type": "number" },
+        "venue": { "type": "string" },
+        "modality": { "type": "string" },
+        "abstract": { "type": "string" },
+        "methodology": { "type": "string" },
+        "dataset": { "type": "string" },
+        "keyFindings": { "type": "array", "items": { "type": "string" } },
+        "metrics": { "type": "string" },
+        "chunks": { "type": "array", "items": { "type": "object" } },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "title"]
+    },
+    "SavedCitation": {
+      "title": "SavedCitation",
+      "description": "User's bookmarked clinical evidence snippet or equation citation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "paperTitle": { "type": "string" },
+        "authors": { "type": "string" },
+        "year": { "type": "number" },
+        "section": { "type": "string" },
+        "quoteSnippet": { "type": "string" },
+        "relevanceScore": { "type": "number" },
+        "notes": { "type": "string" },
+        "savedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "paperTitle"]
+    },
+    "ChatSession": {
+      "title": "ChatSession",
+      "description": "Saved personalized clinical RAG chat session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "messages": { "type": "array", "items": { "type": "object" } },
+        "perspectiveUsed": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "entity": "User",
+      "security": "allow read, write: if request.auth != null && request.auth.uid == userId;"
+    },
+    "/users/{userId}/customPapers/{paperId}": {
+      "entity": "CustomPaper",
+      "security": "allow read, write: if request.auth != null && request.auth.uid == userId;"
+    },
+    "/users/{userId}/savedCitations/{citationId}": {
+      "entity": "SavedCitation",
+      "security": "allow read, write: if request.auth != null && request.auth.uid == userId;"
+    },
+    "/users/{userId}/chatSessions/{sessionId}": {
+      "entity": "ChatSession",
+      "security": "allow read, write: if request.auth != null && request.auth.uid == userId;"
+    }
+  }
+}

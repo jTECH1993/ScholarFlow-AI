@@ -1,0 +1,6 @@
+{
+  "name": "Vital Sign RAG",
+  "description": "ScholarFlow AI — Enterprise multi-tenant research intelligence & personalized evidence-grounded RAG SaaS platform with multi-domain literature synthesis, custom perspectives, cross-paper comparative matrices, and private knowledge management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
