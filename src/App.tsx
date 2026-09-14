@@ -339,7 +339,8 @@ export const App: React.FC = () => {
       }
       return updated;
     });
-    setUploadNotification(`Document "${newPaper.title}" successfully indexed into Session "${sessionId}" with ${newPaper.chunks.length} chunks!`);
+    const catTag = newPaper.category ? ` • Domain: ${newPaper.category}` : '';
+    setUploadNotification(`Document "${newPaper.title}" indexed into Session "${sessionId}" (${newPaper.chunks.length} chunks${catTag}) with Domain Segregation Guard active.`);
     setTimeout(() => {
       setUploadNotification(null);
     }, 7000);

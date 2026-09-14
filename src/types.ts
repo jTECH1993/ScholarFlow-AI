@@ -40,9 +40,15 @@ export interface VitalSignPaper {
   deviceUsed?: string;
   groundTruth?: string;
   clinicalSignificance?: string;
-  // Multi-domain Universal Research fields
+  // Multi-domain Universal Research & Category Segregation fields
   domainId?: string;
   domainName?: string;
+  category?: string;
+  detectedCategory?: string;
+  categoryConfidence?: number;
+  categoryKeywords?: string[];
+  categoryReasoning?: string;
+  compatibleCategories?: string[];
   coreThesis?: string;
   theoreticalFramework?: string;
   primaryCorpus?: string;

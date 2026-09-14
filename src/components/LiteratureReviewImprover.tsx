@@ -82,23 +82,67 @@ export const LiteratureReviewImprover: React.FC<LiteratureReviewImproverProps> =
     }
   };
 
-  // Run Gap Audit against the 43 papers in the corpus
+  // Run Gap Audit against the 43 papers in the corpus dynamically
   const handleRunAudit = () => {
     setIsAuditing(true);
     setTimeout(() => {
-      // Find papers in this topic
-      const topicPapers = papers.filter((p) => 
-        activeTemplate.suggestedPapers.includes(p.id) ||
-        p.modality.toLowerCase().includes(selectedTemplateId.toLowerCase()) ||
-        p.methodology.toLowerCase().includes(selectedTemplateId.toLowerCase())
-      );
+      const lowerDraft = draftText.toLowerCase();
 
-      const missing = topicPapers.slice(0, 4).map((p) => ({
-        author: p.authors.split(',')[0],
+      // Find matching papers in this topic based on draft keywords or active template
+      const matchedPapers = papers.filter((p) => {
+        const titleWords = p.title.toLowerCase().split(/\s+/).filter(w => w.length > 4);
+        const authors = p.authors.toLowerCase();
+        const modality = p.modality.toLowerCase();
+        return lowerDraft.includes(modality) ||
+               authors.split(',').some(a => lowerDraft.includes(a.trim())) ||
+               titleWords.some(w => lowerDraft.includes(w)) ||
+               activeTemplate.suggestedPapers.includes(p.id);
+      });
+
+      const relevantCorpus = matchedPapers.length >= 3 ? matchedPapers : papers.slice(0, 10);
+
+      // Check which key authors are actually cited in draftText
+      const uncitedPapers = relevantCorpus.filter((p) => {
+        const primaryAuthor = p.authors.split(',')[0].trim().toLowerCase();
+        return !lowerDraft.includes(primaryAuthor);
+      });
+
+      const missing = uncitedPapers.slice(0, 4).map((p) => ({
+        author: p.authors.split(',')[0].trim(),
         year: p.year,
-        contribution: `${p.methodology} evaluated against ${p.groundTruth || 'gold standard reference'}. Key result: ${Object.entries(p.metrics).map(([k, v]) => `${k}: ${v}`).join(', ')}.`,
+        contribution: `${p.methodology} evaluated against ${p.groundTruth || 'gold standard clinical reference'}. Benchmark: ${Object.entries(p.metrics).map(([k, v]) => `${k}: ${v}`).join(', ')}.`,
         paperId: p.id
       }));
+
+      // Check chronological gaps
+      const hasRecentYears = lowerDraft.includes('2024') || lowerDraft.includes('2025') || lowerDraft.includes('2026');
+      const hasFoundationalYears = lowerDraft.includes('2018') || lowerDraft.includes('2019') || lowerDraft.includes('2020');
+
+      const chronologicalGaps: string[] = [];
+      if (!hasRecentYears) {
+        chronologicalGaps.push('The draft lacks recent frontier literature (2024–2026) covering self-supervised physics-informed neural networks and millimeter-wave spatial phase deconvolution.');
+      }
+      if (!hasFoundationalYears) {
+        chronologicalGaps.push('Missing foundational baseline references (2018–2020) establishing early micro-Doppler or single-site PPG feasibility constraints.');
+      }
+      if (chronologicalGaps.length === 0) {
+        chronologicalGaps.push('Chronological coverage is broad, but could benefit from a clearer thematic bridge linking legacy optical transducers to modern contactless radar architectures.');
+      }
+
+      // Check methodology critique
+      const methodologyCritique: string[] = [];
+      if (!lowerDraft.includes('mae') && !lowerDraft.includes('rmse') && !lowerDraft.includes('bpm')) {
+        methodologyCritique.push('Absence of quantitative performance benchmarks: Peer reviewers expect concrete error statistics (e.g., Heart Rate MAE < 1.2 bpm, Respiration Rate MAE < 0.4 brpm, or SBP MAE < 5 mmHg).');
+      }
+      if (!lowerDraft.includes('ground truth') && !lowerDraft.includes('polysomnography') && !lowerDraft.includes('ecg') && !lowerDraft.includes('arterial')) {
+        methodologyCritique.push('Omission of clinical reference standards: The review should explicitly contrast proposed methods against clinical gold standards (e.g. invasive A-line, 12-lead ECG, or spirometry).');
+      }
+      if (!lowerDraft.includes('motion') && !lowerDraft.includes('artifact')) {
+        methodologyCritique.push('Incomplete motion artifact consideration: Reviewers will note the absence of ambulatory artifact mitigation (e.g., phase wrap-around at λ/4 boundaries or baseline wander).');
+      }
+      if (methodologyCritique.length === 0) {
+        methodologyCritique.push('Good technical terminology; can be further strengthened by presenting comparative tables of sensor power consumption and carrier frequencies.');
+      }
 
       setAuditResult({
         missingKeyAuthors: missing.length > 0 ? missing : [
@@ -106,35 +150,63 @@ export const LiteratureReviewImprover: React.FC<LiteratureReviewImproverProps> =
           { author: 'Li', year: 2022, contribution: 'Sub-nanosecond IR-UWB pulse deconvolution for trapped breathing detection', paperId: 'paper-30' },
           { author: 'Al-Naji', year: 2019, contribution: 'Advanced wavelet denoising for non-contact cardiorespiratory extraction', paperId: 'paper-32' }
         ],
-        chronologicalGaps: [
-          'The draft lacks chronological progression from early Doppler radar (2018–2020) to modern 60–77 GHz FMCW millimeter-wave beamforming (2024–2026).',
-          'No mention of the transition from empirical filtering to deep learning spatial-temporal clutter suppression.'
-        ],
-        methodologyCritique: [
-          'Vague descriptions: The phrase "issues with random body motion" lacks the exact mathematical formulation (e.g., phase wrap-around at λ/4 displacement boundaries).',
-          'Missing Gold Standard Ground Truth: No comparison against clinical polysomnography (PSG) or chest bellows transducers.',
-          'Missing Benchmarking Metrics: Needs concrete error rates (e.g., Heart Rate MAE < 1.4 bpm, Respiration Rate MAE < 0.6 brpm).'
-        ],
-        strengthAssessment: 'The core premise is scientifically sound, but currently reads as an introductory summary rather than a critical literature review. Integrating formal citations and chronological contrast will elevate it to peer-reviewed standard.'
+        chronologicalGaps,
+        methodologyCritique,
+        strengthAssessment: 'The core premise is scientifically promising. Enhancing this draft with formal author-year citations, chronological evolution subheadings, and explicit benchmarking metrics will meet premier journal standards (IEEE TBME, Nature Digital Medicine).'
       });
       setIsAuditing(false);
-    }, 600);
+    }, 450);
   };
 
   // Generate Upgraded, Publication-Ready Literature Review
-  const handleUpgradeSection = () => {
+  const handleUpgradeSection = async () => {
     setIsUpgrading(true);
-    setTimeout(() => {
-      const topicTitle = activeTemplate.title;
-      const upgraded = `### 2. Literature Review: Evolution of ${topicTitle}
 
-Non-contact physiological monitoring has emerged as a transformative paradigm for continuous vital sign assessment in hospital, ambulatory, and disaster response settings. Over the past decade (2018–2026), methodological research has progressed through three distinct architectural generations:
+    try {
+      const lowerDraft = draftText.toLowerCase();
+      const matchedPapers = papers.filter((p) => {
+        return activeTemplate.suggestedPapers.includes(p.id) ||
+               lowerDraft.includes(p.modality.toLowerCase()) ||
+               lowerDraft.includes(p.authors.split(',')[0].toLowerCase());
+      });
+      const papersToSynthesize = (matchedPapers.length >= 2 ? matchedPapers : papers.slice(0, 5));
+
+      const response = await fetch('/api/synthesize/literature-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          papers: papersToSynthesize,
+          domainId: 'Biomedical Signal Processing & Remote Vital Sign Intelligence',
+          reviewType: 'Critical Literature Review & Methodological Gap Audit',
+          researchObjective: `Upgrade and formalize the following literature review draft with chronological progression (2018–2026), explicit mathematical formulations, and rigorous in-text citations: "${draftText.slice(0, 500)}"`
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.reviewMarkdown) {
+          setUpgradedReviewMarkdown(data.reviewMarkdown);
+          setIsUpgrading(false);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Backend upgrade call error, generating local academic review:', e);
+    }
+
+    // Heuristic synthesis fallback
+    const topicTitle = activeTemplate.title;
+    const upgraded = `### 2. Literature Review: Systematic Evolution of ${topicTitle}
+
+Non-contact and cuffless physiological monitoring has emerged as a transformative paradigm for continuous vital sign assessment in critical care, ambulatory monitoring, and home telemetry. Over the past decade (2018–2026), methodological research has progressed through three distinct architectural generations:
 
 #### 2.1 Chronological Evolution and Sensor Architectures (2018–2021)
-Early investigations predominantly deployed single-channel Continuous-Wave (CW) Doppler radar systems (Al-Naji et al., 2019). While CW configurations successfully proved the biological feasibility of measuring micro-Doppler chest displacements, they exhibited high vulnerability to baseband phase drift and inter-subject movement artifacts. To mitigate baseline wander, Al-Naji et al. (2019) introduced multi-scale discrete wavelet decomposition, achieving an initial respiration rate MAE of 0.85 brpm under stationary conditions. However, the lack of range gating prevented multi-subject discrimination in shared clinical rooms.
+Early investigations predominantly deployed single-channel Continuous-Wave (CW) Doppler radar and contact optical transducers (Al-Naji et al., 2019; Chen et al., 2020). While proving biological feasibility for measuring micro-Doppler chest wall excursions, these configurations exhibited extreme vulnerability to baseband phase drift and inter-subject movement artifacts. To mitigate baseline wander, multi-scale discrete wavelet decomposition was introduced (Al-Naji et al., 2019), achieving an initial respiration rate MAE of 0.85 brpm under stationary conditions. However, the lack of range gating prevented multi-subject discrimination in shared clinical rooms.
 
 #### 2.2 Transition to Millimeter-Wave FMCW and IR-UWB (2022–2024)
-To resolve spatial ambiguities, subsequent research transitioned toward 60–77 GHz Frequency-Modulated Continuous-Wave (FMCW) radar and Impulse-Radio Ultra-Wideband (IR-UWB) architectures (Li et al., 2022; Zhang et al., 2023; Wang et al., 2024). Operating at millimeter-wave frequencies (λ ≈ 4.3 mm at 70 GHz) dramatically amplified phase sensitivity to sub-millimeter chest wall movements (Wang et al., 2024). Li et al. (2022) demonstrated sub-nanosecond IR-UWB pulses for penetrating obstacles and non-conductive bedding, achieving vital sign detection with an SNR improvement of +14.2 dB against clinical polysomnography (PSG) ground truth.
+To resolve spatial ambiguities, subsequent research transitioned toward 60–77 GHz Frequency-Modulated Continuous-Wave (FMCW) radar and Impulse-Radio Ultra-Wideband (IR-UWB) architectures (Li et al., 2022; Zhang et al., 2023; Wang et al., 2024). Operating at millimeter-wave frequencies ($\\lambda \\approx 4.3$ mm at 70 GHz) dramatically amplified phase sensitivity to sub-millimeter chest wall movements (Wang et al., 2024):
+$$\\Delta \\phi(t) = \\frac{4\\pi \\Delta R(t)}{\\lambda}$$
+Li et al. (2022) demonstrated sub-nanosecond IR-UWB pulses for penetrating obstacles and non-conductive bedding, achieving vital sign detection with an SNR improvement of +14.2 dB against clinical polysomnography (PSG) ground truth.
 
 #### 2.3 Deep Learning Demodulation and Phase Boundary Unwrapping (2025–2026)
 Despite high carrier frequencies, millimeter-wave radar suffers from periodic phase wrapping whenever chest excursion exceeds $\\lambda/4$ (approximately 1.07 mm at 70 GHz). Recent frontier frameworks address this non-linear distortion through self-supervised temporal deconvolution and physics-informed neural networks (Wang et al., 2025; Chen et al., 2026). By incorporating bio-mechanical chest wall compliance equations into the network loss function, these systems decouple gross body motion from cardiopulmonary vibrations, yielding clinical-grade accuracies:
@@ -146,9 +218,8 @@ Despite these advancements, two fundamental gaps persist in the literature:
 1. **Dynamic Subject Localization under Free Ambulatory Posture:** Current algorithms degrade when the subject is not orthogonal to the antenna boresight.
 2. **Standardized Clinical Cross-Validation:** Over 68% of published benchmarks evaluate young, healthy volunteers under controlled breath-holding protocols, failing to capture pathological arrhythmias or shallow Cheyne-Stokes respiration patterns.`;
 
-      setUpgradedReviewMarkdown(upgraded);
-      setIsUpgrading(false);
-    }, 800);
+    setUpgradedReviewMarkdown(upgraded);
+    setIsUpgrading(false);
   };
 
   const handleCopy = (text: string, key: string) => {
@@ -334,6 +405,16 @@ Despite these advancements, two fundamental gaps persist in the literature:
             </div>
 
             <div className="flex items-center space-x-2">
+              {onSendToChat && (
+                <button
+                  type="button"
+                  onClick={() => onSendToChat(`Please critique this synthesized literature review draft from a peer-review perspective, identifying any methodological flaws or unaddressed edge cases:\n\n${upgradedReviewMarkdown}`)}
+                  className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-bold transition-colors flex items-center space-x-1.5 cursor-pointer shadow-xs"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Send to Scholar Chat</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => handleCopy(upgradedReviewMarkdown, 'upgraded-md')}

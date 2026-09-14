@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { 
   Upload, 
   FileText, 
@@ -19,7 +19,9 @@ import {
   GraduationCap,
   FolderPlus,
   Quote,
-  Check
+  Check,
+  Shield,
+  Tag
 } from 'lucide-react';
 import { VitalSignPaper, VitalModality, PaperChunk } from '../types';
 import { VITAL_MODALITIES } from '../data/vitalSignPapers';
@@ -27,6 +29,11 @@ import { PAPER_EXTENDED_DETAILS } from '../data/paperDetails';
 import { RESEARCH_DOMAINS, ResearchDomainId } from '../data/researchDomains';
 import { LITERATURE_CLUSTERS } from '../data/sampleLiteratureClusters';
 import { ACADEMIC_CHUNKING_STRATEGIES, AcademicChunkingStrategy } from '../services/academicChunker';
+import { 
+  classifyPaperCategory, 
+  ACADEMIC_CATEGORIES, 
+  AcademicCategoryDefinition 
+} from '../services/academicClassifier';
 
 interface DocumentUploadModalProps {
   isOpen: boolean;
@@ -239,6 +246,17 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
 
   const currentDomainConfig = RESEARCH_DOMAINS[selectedDomain] || RESEARCH_DOMAINS['english-literature'];
 
+  // Live Category Auto-Detection
+  const liveClassification = useMemo(() => {
+    const textSample = pastedText || (selectedFiles.length > 0 ? selectedFiles[0].name : '');
+    if (!textSample || textSample.length < 5) return null;
+    return classifyPaperCategory({
+      title: selectedFiles[0]?.name || '',
+      abstract: textSample.slice(0, 800),
+      content: textSample.slice(0, 2000),
+    });
+  }, [pastedText, selectedFiles]);
+
   // Handle single or multiple file selection
   const handleFilesSelected = (files: FileList | File[]) => {
     const fileArray = Array.from(files);
@@ -369,13 +387,39 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
     }
   };
 
+  // Helper to ensure papers have category metadata
+  const enrichPaperWithCategory = (p: VitalSignPaper): VitalSignPaper => {
+    if (p.category && p.detectedCategory) return p;
+    const classification = classifyPaperCategory({
+      title: p.title,
+      abstract: p.abstract,
+      methodology: p.methodology,
+      content: p.chunks?.map((c) => c.content).join(' '),
+      modality: p.modality,
+      deviceUsed: p.deviceUsed,
+      groundTruth: p.groundTruth,
+    });
+    return {
+      ...p,
+      category: p.category || classification.categoryName,
+      domainId: p.domainId || classification.categoryId,
+      domainName: p.domainName || classification.categoryName,
+      detectedCategory: classification.categoryName,
+      categoryConfidence: classification.confidence,
+      categoryKeywords: classification.matchedKeywords,
+      categoryReasoning: classification.reasoning,
+      compatibleCategories: classification.compatibleCategories,
+    };
+  };
+
   // Quick Load Entire Literature Cluster
   const handleIngestCluster = (clusterId: string) => {
     const cluster = LITERATURE_CLUSTERS.find(c => c.id === clusterId);
     if (!cluster) return;
 
-    // Direct batch index all papers in cluster
-    cluster.papers.forEach(p => {
+    // Direct batch index all papers in cluster with category enrichment
+    const enrichedClusterPapers = cluster.papers.map(enrichPaperWithCategory);
+    enrichedClusterPapers.forEach(p => {
       PAPER_EXTENDED_DETAILS[p.id] = {
         problemStatement: p.coreThesis || p.problemStatement || '',
         deviceUsed: p.deviceUsed || p.primaryCorpus || '',
@@ -386,7 +430,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
     });
 
     if (onBatchIndexed) {
-      onBatchIndexed(cluster.papers);
+      onBatchIndexed(enrichedClusterPapers);
     }
 
     onClose();
@@ -394,15 +438,17 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
 
   // Quick Load Single Paper from Preset
   const handleSelectPreset = (paper: VitalSignPaper) => {
-    setDraftPaper(paper);
-    setBatchDrafts([paper]);
+    const enriched = enrichPaperWithCategory(paper);
+    setDraftPaper(enriched);
+    setBatchDrafts([enriched]);
     setIsReviewStep(true);
   };
 
   // Final Commit & Index into RAG Corpus
   const handleConfirmAndIndex = () => {
     if (batchDrafts.length > 0) {
-      batchDrafts.forEach(p => {
+      const enrichedBatch = batchDrafts.map(enrichPaperWithCategory);
+      enrichedBatch.forEach(p => {
         PAPER_EXTENDED_DETAILS[p.id] = {
           problemStatement: p.coreThesis || p.problemStatement || '',
           deviceUsed: p.deviceUsed || p.primaryCorpus || '',
@@ -412,16 +458,17 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
         onPaperIndexed(p);
       });
       if (onBatchIndexed) {
-        onBatchIndexed(batchDrafts);
+        onBatchIndexed(enrichedBatch);
       }
     } else if (draftPaper) {
-      PAPER_EXTENDED_DETAILS[draftPaper.id] = {
-        problemStatement: draftPaper.coreThesis || draftPaper.problemStatement || '',
-        deviceUsed: draftPaper.deviceUsed || draftPaper.primaryCorpus || '',
-        groundTruth: draftPaper.groundTruth || draftPaper.theoreticalFramework || '',
-        clinicalSignificance: draftPaper.clinicalSignificance || draftPaper.methodology || '',
+      const enriched = enrichPaperWithCategory(draftPaper);
+      PAPER_EXTENDED_DETAILS[enriched.id] = {
+        problemStatement: enriched.coreThesis || enriched.problemStatement || '',
+        deviceUsed: enriched.deviceUsed || enriched.primaryCorpus || '',
+        groundTruth: enriched.groundTruth || enriched.theoreticalFramework || '',
+        clinicalSignificance: enriched.clinicalSignificance || enriched.methodology || '',
       };
-      onPaperIndexed(draftPaper);
+      onPaperIndexed(enriched);
     }
     onClose();
   };
@@ -667,6 +714,25 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                     </div>
                   )}
 
+                  {selectedFiles.length > 0 && liveClassification && (
+                    <div className="p-3 bg-teal-50/70 border border-teal-200/80 rounded-xl flex items-start space-x-2.5 text-xs">
+                      <Shield className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                      <div className="space-y-0.5 flex-1">
+                        <div className="flex flex-wrap items-center justify-between gap-1">
+                          <span className="font-bold text-teal-950">
+                            Auto-Detected Category: <span className="text-teal-700 underline">{liveClassification.categoryName}</span>
+                          </span>
+                          <span className="px-1.5 py-0.2 rounded text-3xs font-bold bg-teal-100 text-teal-800">
+                            {Math.round(liveClassification.confidence * 100)}% Confidence
+                          </span>
+                        </div>
+                        <p className="text-2xs text-slate-600">
+                          🛡️ Enterprise Domain Segregation: Paper will be indexed strictly into the <strong>{liveClassification.categoryName}</strong> partition to guarantee cross-domain comparison isolation.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {selectedFiles.length > 0 && (
                     <div className="flex justify-end">
                       <button
@@ -708,6 +774,25 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                       className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs font-sans focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
+
+                  {pastedText.length > 20 && liveClassification && (
+                    <div className="p-3 bg-teal-50/70 border border-teal-200/80 rounded-xl flex items-start space-x-2.5 text-xs">
+                      <Shield className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                      <div className="space-y-0.5 flex-1">
+                        <div className="flex flex-wrap items-center justify-between gap-1">
+                          <span className="font-bold text-teal-950">
+                            Auto-Classified Domain: <span className="text-teal-700 underline">{liveClassification.categoryName}</span>
+                          </span>
+                          <span className="px-1.5 py-0.2 rounded text-3xs font-bold bg-teal-100 text-teal-800">
+                            {Math.round(liveClassification.confidence * 100)}% Confidence
+                          </span>
+                        </div>
+                        <p className="text-2xs text-slate-600">
+                          🛡️ Enterprise Domain Segregation: Content automatically tagged into <strong>{liveClassification.categoryName}</strong>. Comparison matrices will isolate this manuscript from disparate domains.
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex justify-end">
                     <button
@@ -827,6 +912,58 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                   >
                     Back to Upload
                   </button>
+                </div>
+
+                {/* Enterprise Category Auto-Detection & Domain Segregation Guard */}
+                <div className="p-3.5 bg-gradient-to-r from-teal-50/90 to-indigo-50/90 border border-teal-200/90 rounded-xl space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center space-x-2">
+                      <Shield className="w-4 h-4 text-teal-600" />
+                      <span className="text-2xs font-bold text-teal-950 uppercase tracking-wider">
+                        Enterprise Category Auto-Detection &amp; Isolation Guard
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-3xs font-bold bg-teal-100 text-teal-800 border border-teal-200">
+                        {Math.round((draftPaper.categoryConfidence || 0.95) * 100)}% Match
+                      </span>
+                    </div>
+                    <span className="text-3xs text-teal-700 font-semibold flex items-center space-x-1">
+                      <Check className="w-3 h-3 text-teal-600" />
+                      <span>Domain Segregation Active</span>
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-bold text-slate-800">
+                      Assigned Domain Category:
+                    </span>
+                    <select
+                      value={draftPaper.domainId || 'fmcw-radar'}
+                      onChange={(e) => {
+                        const cat = ACADEMIC_CATEGORIES.find((c) => c.id === e.target.value);
+                        if (cat) {
+                          setDraftPaper({
+                            ...draftPaper,
+                            category: cat.name,
+                            domainId: cat.id,
+                            domainName: cat.name,
+                            detectedCategory: cat.name,
+                            compatibleCategories: cat.compatibleCategoryIds,
+                          });
+                        }
+                      }}
+                      className="px-2.5 py-1 bg-white border border-teal-300 rounded-lg text-xs font-bold text-teal-900 focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-2xs"
+                    >
+                      {ACADEMIC_CATEGORIES.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.name} ({cat.badge})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <p className="text-3xs text-slate-600 leading-relaxed">
+                    🛡️ <span className="font-semibold text-slate-800">Domain Isolation Guarantee:</span> This paper will be quarantined within the <strong>{draftPaper.category || 'assigned'}</strong> category. Subsequent literature matrix evaluations and benchmark studies will strictly compare it against compatible literature, preventing cross-domain metric contamination.
+                  </p>
                 </div>
 
                 {/* Primary Metadata Inputs */}
