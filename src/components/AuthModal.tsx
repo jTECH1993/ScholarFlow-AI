@@ -76,9 +76,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setErrorMsg(null);
 
     const rawInput = email.trim();
-    const isAdmin = rawInput.toLowerCase() === 'admin' || rawInput.toLowerCase() === 'admin@scholarflow.ai';
-    const isTalha = rawInput.toLowerCase() === 'mtalhajahangir@mnsuet.edu.pk';
-    const normalizedEmail = isAdmin ? 'admin@scholarflow.ai' : rawInput;
+    const normalizedEmail = rawInput;
 
     try {
       let firebaseUid = '';
@@ -86,83 +84,32 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         const cred = await signInWithEmailAndPassword(auth, normalizedEmail, password);
         firebaseUid = cred.user.uid;
       } catch (authErr: any) {
-        // If user does not exist in Firebase yet, auto-provision
         if (authErr?.code === 'auth/user-not-found' || authErr?.code === 'auth/invalid-credential' || authErr?.code === 'auth/invalid-login-credentials') {
-          try {
-            const newCred = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
-            firebaseUid = newCred.user.uid;
-            if (isTalha) {
-              await updateProfile(newCred.user, { displayName: 'Muhammad Talha Jahangir' });
-            } else if (isAdmin) {
-              await updateProfile(newCred.user, { displayName: 'System Administrator' });
-            }
-          } catch (createErr) {
-            console.warn('Auto user provision warning:', createErr);
-          }
+          throw new Error('Account not found or password incorrect. Please verify credentials or register.');
         }
+        throw authErr;
       }
 
-      // Build profile according to specific credentials
-      let profile: UserProfile;
-      if (isTalha) {
-        const pObj = CLINICAL_PERSPECTIVES.find(p => p.id === 'vital-sign-rag') || CLINICAL_PERSPECTIVES[0];
-        profile = {
-          uid: firebaseUid || 'user-talha-jahangir',
-          email: 'mtalhajahangir@mnsuet.edu.pk',
-          displayName: 'Muhammad Talha Jahangir',
-          role: 'Academic Researcher',
-          organization: 'MNS UET (MNS University of Engineering and Technology)',
-          perspectiveId: 'vital-sign-rag',
-          perspectiveName: pObj.name,
-          perspectiveCustomInstructions: pObj.systemPromptGuideline,
-          preferredModalityFilter: 'Blood Pressure (BP)',
-          retrievalStrategy: 'hybrid',
-          topK: 5,
-          similarityThreshold: 0.03,
-          temperature: 0.2,
-          createdAt: new Date().toISOString(),
-          lastActive: new Date().toISOString(),
-        };
-      } else if (isAdmin) {
-        const pObj = CLINICAL_PERSPECTIVES.find(p => p.id === 'academic-scholar') || CLINICAL_PERSPECTIVES[0];
-        profile = {
-          uid: firebaseUid || 'admin-scholarflow',
-          email: 'admin@scholarflow.ai',
-          displayName: 'System Administrator',
-          role: 'Administrator',
-          organization: 'ScholarFlow Enterprise Administration',
-          perspectiveId: 'academic-scholar',
-          perspectiveName: pObj.name,
-          perspectiveCustomInstructions: pObj.systemPromptGuideline,
-          preferredModalityFilter: 'all',
-          retrievalStrategy: 'hybrid',
-          topK: 6,
-          similarityThreshold: 0.03,
-          temperature: 0.2,
-          createdAt: new Date().toISOString(),
-          lastActive: new Date().toISOString(),
-        };
-      } else {
-        const selectedPerspective = CLINICAL_PERSPECTIVES.find(p => p.id === perspectiveId) || CLINICAL_PERSPECTIVES[0];
-        const derivedName = displayName || normalizedEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-        profile = {
-          uid: firebaseUid || `user-${Date.now()}`,
-          email: normalizedEmail,
-          displayName: derivedName,
-          role,
-          organization: organization || 'Academic Research Center',
-          perspectiveId: selectedPerspective.id,
-          perspectiveName: selectedPerspective.name,
-          perspectiveCustomInstructions: selectedPerspective.systemPromptGuideline,
-          preferredModalityFilter: selectedPerspective.defaultModality,
-          retrievalStrategy: selectedPerspective.defaultRetrievalStrategy,
-          topK: selectedPerspective.defaultTopK,
-          similarityThreshold: selectedPerspective.defaultSimilarityThreshold,
-          temperature: 0.2,
-          createdAt: new Date().toISOString(),
-          lastActive: new Date().toISOString(),
-        };
-      }
+      // Build profile according to authenticated user
+      const selectedPerspective = CLINICAL_PERSPECTIVES.find(p => p.id === perspectiveId) || CLINICAL_PERSPECTIVES[0];
+      const derivedName = displayName || normalizedEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+      const profile: UserProfile = {
+        uid: firebaseUid || `user-${Date.now()}`,
+        email: normalizedEmail,
+        displayName: derivedName,
+        role,
+        organization: organization || 'Academic Research Center',
+        perspectiveId: selectedPerspective.id,
+        perspectiveName: selectedPerspective.name,
+        perspectiveCustomInstructions: selectedPerspective.systemPromptGuideline,
+        preferredModalityFilter: selectedPerspective.defaultModality,
+        retrievalStrategy: selectedPerspective.defaultRetrievalStrategy,
+        topK: selectedPerspective.defaultTopK,
+        similarityThreshold: selectedPerspective.defaultSimilarityThreshold,
+        temperature: 0.2,
+        createdAt: new Date().toISOString(),
+        lastActive: new Date().toISOString(),
+      };
 
       // Persist profile locally and in Firestore
       try {
@@ -603,17 +550,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </form>
           )}
 
-          {/* Free Guest Workspace Option */}
-          <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2 text-2xs">
-            <span className="text-slate-500">Want to explore without logging in?</span>
-            <button
-              type="button"
-              onClick={onClose}
-              className="text-teal-700 hover:text-teal-900 font-semibold cursor-pointer underline flex items-center space-x-1"
-            >
-              <span>Continue to Dashboard as Free Guest</span>
-              <ArrowRight className="w-3.5 h-3.5 inline" />
-            </button>
+          {/* Institutional Multi-Tenant Isolation Notice */}
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-2xs text-slate-500">
+            <span className="flex items-center space-x-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+              <span>Multi-Tenant Enterprise Isolation Active</span>
+            </span>
+            <span className="text-3xs font-mono text-slate-400">TLS 1.3 ENCRYPTED</span>
           </div>
         </div>
 

@@ -259,6 +259,13 @@ export interface SavedChatSession {
 
 export type ActiveResearchDomain = 
   | 'all'
+  | 'general-academic'
+  | 'cs-ai'
+  | 'natural-sciences'
+  | 'social-sciences'
+  | 'humanities-literature'
+  | 'engineering-technology'
+  | 'biomedical-sensing'
   | 'vital-signs-ppg'
   | 'ecg-rppg'
   | 'fmcw-radar'

@@ -17,6 +17,7 @@ import { LiteratureReviewGenerator } from './components/LiteratureReviewGenerato
 import { DocumentUploadModal } from './components/DocumentUploadModal';
 import { AuthModal } from './components/AuthModal';
 import { SplashScreen } from './components/SplashScreen';
+import { LoginScreen } from './components/LoginScreen';
 import { PerspectiveSettingsModal } from './components/PerspectiveSettingsModal';
 import { SavedCitationsDrawer } from './components/SavedCitationsDrawer';
 import { AdminPortal } from './components/AdminPortal';
@@ -86,9 +87,16 @@ export const App: React.FC = () => {
     return [];
   });
 
-  const [includeSampleCorpus, setIncludeSampleCorpus] = useState<boolean>(true);
+  const [includeSampleCorpus, setIncludeSampleCorpus] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem('scholarflow_include_sample');
+      if (stored !== null) return stored === 'true';
+    } catch {}
+    return false; // Default to a clean 0-paper workspace; users can upload or click "Load Sample Library"
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [pendingUploadFiles, setPendingUploadFiles] = useState<File[]>([]);
   const [uploadNotification, setUploadNotification] = useState<string | null>(null);
 
   // User Session Management: Check stored profile or start as Guest
@@ -118,8 +126,12 @@ export const App: React.FC = () => {
   const [authModalTab, setAuthModalTab] = useState<'signin' | 'signup' | 'reset'>('signin');
   const [isPerspectiveModalOpen, setIsPerspectiveModalOpen] = useState(false);
   const [isCitationsDrawerOpen, setIsCitationsDrawerOpen] = useState(false);
-  const [isSplashScreenOpen, setIsSplashScreenOpen] = useState(false); // Closed by default so user sees dashboard directly
+  const [isSplashScreenOpen, setIsSplashScreenOpen] = useState(false);
   const [isAdminSecurityModalOpen, setIsAdminSecurityModalOpen] = useState(false);
+
+  // Turnitin-Style Authentication Flow: Stage 1 = Splash Screen, Stage 2 = Login Screen, Stage 3 = Interface
+  const [authFlowStep, setAuthFlowStep] = useState<'splash' | 'login'>('splash');
+  const [loginInitialMode, setLoginInitialMode] = useState<'signin' | 'signup' | 'reset'>('signin');
 
   // Global Dark Mode Controller
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
@@ -151,8 +163,6 @@ export const App: React.FC = () => {
     }
     return (
       currentUser.role === 'Administrator' ||
-      currentUser.email === 'talha93uet@gmail.com' ||
-      currentUser.email === 'mtalhajahangir@mnsuet.edu.pk' ||
       localStorage.getItem('scholarflow_admin_auth') === 'true'
     );
   }, [currentUser]);
@@ -346,6 +356,26 @@ export const App: React.FC = () => {
     }, 7000);
   };
 
+  const handleAddBatchPapers = (newPapers: VitalSignPaper[]) => {
+    if (!newPapers || newPapers.length === 0) return;
+    setSessionPapers((prev) => {
+      const incomingIds = new Set(newPapers.map((p) => p.id));
+      const filteredPrev = prev.filter((p) => !incomingIds.has(p.id));
+      const updated = [...newPapers, ...filteredPrev];
+      try {
+        localStorage.setItem(`scholarflow_session_docs_${sessionId}`, JSON.stringify(updated));
+      } catch (e) {
+        console.warn('Failed to store session papers in localStorage:', e);
+      }
+      return updated;
+    });
+    const totalNewChunks = newPapers.reduce((sum, p) => sum + p.chunks.length, 0);
+    setUploadNotification(`Batch of ${newPapers.length} papers indexed (${totalNewChunks} semantic chunks) into Session "${sessionId}" with Domain Segregation active.`);
+    setTimeout(() => {
+      setUploadNotification(null);
+    }, 7000);
+  };
+
   const handleDeletePaper = (paperId: string) => {
     setSessionPapers((prev) => {
       const updated = prev.filter((p) => p.id !== paperId);
@@ -362,10 +392,41 @@ export const App: React.FC = () => {
     setSessionPapers([]);
     setIncludeSampleCorpus(false);
     try {
+      localStorage.setItem('scholarflow_include_sample', 'false');
       localStorage.removeItem(`scholarflow_session_docs_${sessionId}`);
     } catch {}
-    setUploadNotification('Session library cleared.');
+    setUploadNotification('Session library cleared (0 papers indexed).');
     setTimeout(() => setUploadNotification(null), 3000);
+  };
+
+  const handleLoadSampleCorpus = () => {
+    setIncludeSampleCorpus(true);
+    try {
+      localStorage.setItem('scholarflow_include_sample', 'true');
+    } catch {}
+    setUploadNotification('Loaded sample research library (43 papers indexed).');
+    setTimeout(() => setUploadNotification(null), 4000);
+  };
+
+  const handleResetFreshWorkspace = async () => {
+    setSessionPapers([]);
+    setIncludeSampleCorpus(false);
+    setMessages([]);
+    try {
+      localStorage.setItem('scholarflow_include_sample', 'false');
+      localStorage.removeItem(`scholarflow_session_docs_${sessionId}`);
+    } catch {}
+    try {
+      await fetch('/api/rag/reset', { method: 'POST' });
+    } catch (e) {
+      console.warn('Could not reset server RAG index:', e);
+    }
+    const freshSession = `session-${Math.random().toString(36).substring(2, 9)}`;
+    setSessionId(freshSession);
+    localStorage.setItem('scholarflow_session_id', freshSession);
+    setActiveDomain('all');
+    setUploadNotification('Workspace reset to 0 papers. Ready for your uploaded research papers.');
+    setTimeout(() => setUploadNotification(null), 5000);
   };
 
   const handleClearHistory = () => {
@@ -433,19 +494,24 @@ export const App: React.FC = () => {
     localStorage.removeItem('vitalpulse_active_user_uid');
     localStorage.removeItem('scholarflow_active_user_uid');
     localStorage.removeItem('scholarflow_user_profile');
+    localStorage.removeItem('scholarflow_admin_auth');
     
     setCurrentUser(null);
+    setAuthFlowStep('login');
     setSavedCitations([]);
     setMessages([]);
-    // Retain peer-reviewed sample corpus so guest scholar can continue researching
-    setIncludeSampleCorpus(true);
+    // Start fresh workspace on sign out
+    setIncludeSampleCorpus(false);
+    try {
+      localStorage.setItem('scholarflow_include_sample', 'false');
+    } catch {}
 
     const freshSession = `session-${Math.random().toString(36).substring(2, 9)}`;
     setSessionId(freshSession);
     localStorage.setItem('scholarflow_session_id', freshSession);
     setSessionPapers([]);
 
-    setUploadNotification('Signed out. Switched to public Guest Scholar session.');
+    setUploadNotification('Signed out. Please log in to access the research interface.');
     setTimeout(() => setUploadNotification(null), 4000);
   };
 
@@ -455,6 +521,53 @@ export const App: React.FC = () => {
     setActiveTab('chat');
     handleSendMessage(query);
   };
+
+  // --------------------------------------------------------------------------
+  // Turnitin-Style Authentication Lifecycle Gate:
+  // Step 1: Splash Screen
+  // Step 2: Login Screen
+  // Step 3: Main Research Interface (only available after signing in)
+  // --------------------------------------------------------------------------
+  if (!currentUser) {
+    if (authFlowStep === 'splash') {
+      return (
+        <SplashScreen
+          isOpen={true}
+          isFullPage={true}
+          onClose={() => setAuthFlowStep('login')}
+          onProceedToLogin={(tab = 'signin') => {
+            setLoginInitialMode(tab);
+            setAuthFlowStep('login');
+          }}
+          onOpenAuth={(tab = 'signin') => {
+            setLoginInitialMode(tab);
+            setAuthFlowStep('login');
+          }}
+          onOpenUserWorkspace={() => {
+            setLoginInitialMode('signin');
+            setAuthFlowStep('login');
+          }}
+          onOpenAdminPortal={() => {
+            setLoginInitialMode('signin');
+            setAuthFlowStep('login');
+          }}
+          currentUser={null}
+        />
+      );
+    }
+
+    return (
+      <LoginScreen
+        initialMode={loginInitialMode}
+        onBackToSplash={() => setAuthFlowStep('splash')}
+        onLoginSuccess={(profile) => {
+          setCurrentUser(profile);
+          setUploadNotification(`Welcome back, ${profile.displayName}! Institutional access verified.`);
+          setTimeout(() => setUploadNotification(null), 4000);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="flex h-screen bg-white dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 selection:bg-teal-100 selection:text-teal-900 overflow-hidden transition-colors">
@@ -560,11 +673,8 @@ export const App: React.FC = () => {
                     handleSendMessage(q);
                   }}
                   onOpenUpload={() => setActiveTab('upload')}
-                  onLoadSampleCorpus={() => {
-                    setIncludeSampleCorpus(true);
-                    setUploadNotification('Loaded peer-reviewed research library (25 papers indexed)');
-                    setTimeout(() => setUploadNotification(null), 4000);
-                  }}
+                  onLoadSampleCorpus={handleLoadSampleCorpus}
+                  onResetFreshWorkspace={handleResetFreshWorkspace}
                   onOpenDomainManager={() => setIsDomainManagerOpen(true)}
                   paperCount={filteredPapers.length}
                   corpusCount={filteredPapers.length}
@@ -591,7 +701,7 @@ export const App: React.FC = () => {
                   sessionId={sessionId}
                   paperCount={filteredPapers.length}
                   onOpenUpload={() => setActiveTab('upload')}
-                  onLoadSampleCorpus={() => setIncludeSampleCorpus(true)}
+                  onLoadSampleCorpus={handleLoadSampleCorpus}
                 />
               )}
 
@@ -599,12 +709,15 @@ export const App: React.FC = () => {
               {activeTab === 'upload' && (
                 <UploadManagePage
                   papers={filteredPapers}
-                  onOpenUploadModal={() => setIsUploadModalOpen(true)}
-                  onLoadSampleCorpus={() => {
-                    setIncludeSampleCorpus(true);
-                    setUploadNotification('Peer-reviewed library loaded.');
-                    setTimeout(() => setUploadNotification(null), 3000);
+                  onOpenUploadModal={() => {
+                    setPendingUploadFiles([]);
+                    setIsUploadModalOpen(true);
                   }}
+                  onOpenUploadModalWithFiles={(files) => {
+                    setPendingUploadFiles(files);
+                    setIsUploadModalOpen(true);
+                  }}
+                  onLoadSampleCorpus={handleLoadSampleCorpus}
                   onDeletePaper={handleDeletePaper}
                   onClearAllPapers={handleClearAllPapers}
                   onViewPaper={(p) => {
@@ -632,7 +745,7 @@ export const App: React.FC = () => {
                   onAddCustomPaper={handleAddCustomPaper}
                   onOpenUploadModal={() => setIsUploadModalOpen(true)}
                   sessionId={sessionId}
-                  onLoadSampleCorpus={() => setIncludeSampleCorpus(true)}
+                  onLoadSampleCorpus={handleLoadSampleCorpus}
                   onSelectPaperForChat={(paper) => {
                     setActiveTab('chat');
                     handleSendMessage(`Summarize the methodology, theoretical framework, and main findings of the paper: "${paper.title}"`);
@@ -717,8 +830,13 @@ export const App: React.FC = () => {
       {/* Document Upload & Ingestion Modal */}
       <DocumentUploadModal
         isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
+        onClose={() => {
+          setIsUploadModalOpen(false);
+          setPendingUploadFiles([]);
+        }}
+        initialFiles={pendingUploadFiles}
         onPaperIndexed={handleAddCustomPaper}
+        onBatchIndexed={handleAddBatchPapers}
       />
 
       {/* Authentication Modal */}

@@ -58,12 +58,11 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
   const primaryNavItems: { id: AppNavTab; label: string; icon: React.ReactNode; badge?: string }[] = [
     { id: 'home', label: 'Home', icon: <Home className="w-4 h-4" /> },
     { id: 'chat', label: 'Scholar Chat', icon: <MessageSquare className="w-4 h-4" /> },
-    { id: 'upload', label: 'Upload & Manage', icon: <UploadCloud className="w-4 h-4" /> },
+    { id: 'upload', label: 'Upload & Library', icon: <UploadCloud className="w-4 h-4" /> },
     { id: 'literature', label: 'Literature Review', icon: <FileText className="w-4 h-4" /> },
     { id: 'corpus', label: 'Research Corpus', icon: <Layers className="w-4 h-4" /> },
-    { id: 'workbench', label: 'Biomedical Lab', icon: <Activity className="w-4 h-4" /> },
     { id: 'benchmark', label: 'Benchmarks & Metrics', icon: <TrendingUp className="w-4 h-4" /> },
-    { id: 'export', label: 'Streamlit / LaTeX', icon: <FileCode2 className="w-4 h-4" /> },
+    { id: 'export', label: 'LaTeX & Export', icon: <FileCode2 className="w-4 h-4" /> },
     { id: 'settings', label: 'RAG Configuration', icon: <Sliders className="w-4 h-4" /> },
   ];
 

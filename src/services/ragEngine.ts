@@ -35,229 +35,134 @@ function computeTF(tokens: string[]): Map<string, number> {
   return tf;
 }
 
-// Advanced universal query expansion across Humanities, AI/CS, and Sciences
-function expandQueryTokens(tokens: string[]): string[] {
+// Advanced universal query expansion across all academic fields (AI, Sciences, Humanities, Engineering)
+function expandQueryTokens(tokens: string[], activePerspective?: string): string[] {
   const expanded = new Set<string>(tokens);
   const lowerTokens = tokens.map(t => t.toLowerCase());
 
-  // English Literature, Linguistics & Humanities
-  if (lowerTokens.some(t => ['literature', 'literary', 'criticism', 'author', 'novel', 'drama', 'play', 'soliloquy', 'narrative', 'rhetoric', 'deixis', 'focalization', 'discourse', 'metaphor', 'stylistics', 'shakespeare', 'postcolonial', 'hermeneutics', 'poetry', 'poem', 'thesis'].includes(t))) {
-    ['soliloquy', 'narrative', 'focalization', 'deictic', 'metaphor', 'poetics', 'embodied', 'cognition', 'stylistics', 'corpus', 'postcolonial', 'transitivity', 'nominalization', 'irony', 'scepticism', 'close', 'reading', 'rhetoric', 'textual', 'trope', 'subversion', 'hegemony', 'agency'].forEach(t => expanded.add(t));
+  // Universal Academic Research Terminology Expansion
+  if (lowerTokens.some(t => ['method', 'methodology', 'approach', 'technique', 'pipeline', 'algorithm', 'system', 'architecture'].includes(t))) {
+    ['methodology', 'experimental', 'pipeline', 'architecture', 'framework', 'protocol', 'implementation', 'algorithm'].forEach(t => expanded.add(t));
   }
 
-  // Computer Science & AI Systems
-  if (lowerTokens.some(t => ['ai', 'model', 'transformer', 'attention', 'rag', 'retrieval', 'lora', 'fine-tuning', 'benchmark', 'latency', 'nlp', 'algorithm', 'bleu', 'sota', 'weights', 'loss', 'layer'].includes(t))) {
-    ['transformer', 'attention', 'multi-head', 'retrieval', 'augmented', 'generation', 'dense', 'passage', 'lora', 'low-rank', 'adaptation', 'constitutional', 'alignment', 'rlhf', 'rlaif', 'embeddings', 'faiss', 'parameters', 'flops', 'tokens'].forEach(t => expanded.add(t));
+  if (lowerTokens.some(t => ['result', 'results', 'finding', 'findings', 'empirical', 'evaluation', 'benchmark', 'metric', 'metrics', 'performance'].includes(t))) {
+    ['empirical', 'findings', 'benchmark', 'evaluation', 'metric', 'accuracy', 'validation', 'outcomes', 'performance'].forEach(t => expanded.add(t));
   }
 
-  // Foundational Vital Signs & Clinical
-  if (lowerTokens.some(t => ['vital', 'sign', 'signs', 'vitals', 'physiological', 'hemodynamic'].includes(t))) {
-    ['vital', 'signs', 'physiological', 'hemodynamic', 'monitoring', 'heart', 'rate', 'blood', 'pressure', 'respiratory', 'respiration', 'temperature', 'spo2', 'pulse'].forEach(t => expanded.add(t));
+  if (lowerTokens.some(t => ['limitation', 'limitations', 'threat', 'threats', 'failure', 'drawback', 'constraint', 'bias'].includes(t))) {
+    ['limitations', 'threats', 'validity', 'failure', 'modes', 'constraints', 'trade-offs', 'assumptions'].forEach(t => expanded.add(t));
   }
 
-  // Blood Pressure & PTT / PAT / PWV / PINNs
-  if (lowerTokens.some(t => ['ptt', 'pat', 'pwv', 'bp', 'cuffless', 'hypertension', 'systolic', 'diastolic', 'moens', 'hughes', 'pinn', 'pinns'].includes(t))) {
-    ['pulse', 'transit', 'time', 'arrival', 'velocity', 'arterial', 'stiffness', 'compliance', 'elasticity', 'moens', 'korteweg', 'hughes', 'systolic', 'diastolic', 'cuffless', 'blood', 'pressure', 'pinn', 'a-line'].forEach(t => expanded.add(t));
+  if (lowerTokens.some(t => ['theory', 'theoretical', 'framework', 'hypothesis', 'thesis', 'model', 'formulation'].includes(t))) {
+    ['theoretical', 'framework', 'hypothesis', 'epistemology', 'derivation', 'formulation', 'principles'].forEach(t => expanded.add(t));
   }
 
-  // Remote rPPG camera & melanin bias
-  if (lowerTokens.some(t => ['rppg', 'pos', 'chrom', 'remote', 'camera', 'facial', 'video', 'melanin', 'skin'].includes(t))) {
-    ['photoplethysmography', 'facial', 'video', 'ambient', 'chrominance', 'orthogonal', 'pos', 'chrom', 'melanin', 'fitzpatrick', 'ubfc', 'pure', 'deepphys'].forEach(t => expanded.add(t));
+  if (lowerTokens.some(t => ['compare', 'comparison', 'contrast', 'versus', 'vs', 'difference', 'matrix'].includes(t))) {
+    ['comparative', 'synthesis', 'discrepancy', 'consensus', 'divergence', 'trade-offs', 'matrix'].forEach(t => expanded.add(t));
   }
 
-  // IR-UWB Impulse Radar & Through-Wall / Disaster Rubble Sensing
-  if (lowerTokens.some(t => ['iruwb', 'ir-uwb', 'uwb', 'impulse', 'through-wall', 'rubble', 'trapped', 'disaster'].includes(t))) {
-    ['iruwb', 'ir-uwb', 'uwb', 'impulse', 'radio', 'ultra-wideband', 'through-wall', 'rubble', 'trapped', 'disaster', 'svd', 'singular', 'value', 'decomposition', 'sub-nanosecond', 'monocycle', 'gaussian', 'time-of-flight', 'ets', 'novelda', 'xethru', 'vivaldi', 'penetration', 'debris'].forEach(t => expanded.add(t));
+  // Computer Science & AI Systems (if query touches computing/AI)
+  if (lowerTokens.some(t => ['ai', 'transformer', 'attention', 'rag', 'retrieval', 'lora', 'nlp', 'llm', 'deep', 'learning', 'embedding', 'token'].includes(t))) {
+    ['transformer', 'attention', 'retrieval', 'augmented', 'generation', 'dense', 'lora', 'embeddings', 'parameters', 'flops', 'tokens'].forEach(t => expanded.add(t));
   }
 
-  // Radar FMCW & Millimeter-Wave
-  if (lowerTokens.some(t => ['fmcw', 'chirp', 'mmwave', '60ghz', '77ghz', 'iwr6843', 'iwr1443'].includes(t))) {
-    ['fmcw', 'frequency-modulated', 'continuous-wave', 'chirp', 'mmwave', '60ghz', 'iwr6843', 'beat', 'frequency', 'intermediate', 'phase', 'interferometry', 'arctangent', 'demodulation'].forEach(t => expanded.add(t));
+  // English Literature, Linguistics & Humanities (if query touches humanities/literature)
+  if (lowerTokens.some(t => ['literature', 'literary', 'criticism', 'author', 'novel', 'drama', 'soliloquy', 'narrative', 'rhetoric', 'hermeneutics', 'poetry'].includes(t))) {
+    ['soliloquy', 'narrative', 'focalization', 'metaphor', 'poetics', 'stylistics', 'corpus', 'hermeneutics', 'textual', 'trope'].forEach(t => expanded.add(t));
   }
 
-  // General Radar / RF Sensing
-  if (lowerTokens.some(t => ['radar', 'rf', 'contactless', 'microwave', 'displacement', 'phase', 'interferometry'].includes(t))) {
-    ['radar', 'fmcw', 'uwb', 'iruwb', 'ghz', 'chest', 'displacement', 'phase', 'interferometry', 'demodulation', 'vital', 'doppler', 'ballistocardiogram', 'ti', 'iwr6843'].forEach(t => expanded.add(t));
+  // Natural Sciences, Physics & Math (if query touches physical equations/modeling)
+  if (lowerTokens.some(t => ['equation', 'formula', 'physics', 'math', 'mathematical', 'law', 'differential', 'stochastic'].includes(t))) {
+    ['formulation', 'governing', 'equation', 'boundary', 'conditions', 'stochastic', 'mathematical', 'derivation'].forEach(t => expanded.add(t));
   }
 
-  // MIMO Radar & Multi-Patient Beamforming
-  if (lowerTokens.some(t => ['mimo', 'beamforming', 'mvdr', 'capon', 'aoa', 'multi-patient', 'crosstalk'].includes(t))) {
-    ['mimo', 'beamforming', 'mvdr', 'capon', 'steering', 'vector', 'virtual', 'array', 'angle-of-arrival', 'spatial', 'crosstalk', 'multi-patient'].forEach(t => expanded.add(t));
-  }
-
-  // WiFi CSI Sensing
-  if (lowerTokens.some(t => ['wifi', 'csi', 'fresnel', 'subcarrier', 'ofdm'].includes(t))) {
-    ['wifi', 'csi', 'channel', 'state', 'information', 'fresnel', 'subcarrier', 'ofdm', 'cfr', 'phase', 'sanitization'].forEach(t => expanded.add(t));
-  }
-
-  // CW Doppler Radar
-  if (lowerTokens.some(t => ['doppler', 'cw', '24ghz', 'homodyne', 'recoil'].includes(t))) {
-    ['cw', 'continuous-wave', 'doppler', 'recoil', 'homodyne', 'quadrature', '24ghz', 'null', 'circle-fitting'].forEach(t => expanded.add(t));
-  }
-
-  // Precordial Radar Seismocardiography (SCG)
-  if (lowerTokens.some(t => ['scg', 'seismocardiography', 'precordial', 'valve', 'avo', 'pep', 'lvet'].includes(t))) {
-    ['scg', 'seismocardiography', 'precordial', 'acceleration', 'aortic', 'valve', 'avo', 'mvc', 'pep', 'lvet'].forEach(t => expanded.add(t));
-  }
-
-  // Respiratory Rate & Capnography & Bioimpedance
-  if (lowerTokens.some(t => ['respiratory', 'breathing', 'capnography', 'stridor', 'bioimpedance', 'bioz', 'oird'].includes(t))) {
-    ['respiratory', 'breathing', 'capnography', 'stridor', 'bioimpedance', 'bioz', 'pneumography', 'tidal', 'volume', 'minute', 'ventilation', 'oird', 'hypopnea', 'cheyne-stokes'].forEach(t => expanded.add(t));
-  }
-
-  // Sepsis & ICU deterioration
-  if (lowerTokens.some(t => ['sepsis', 'deterioration', 'sirs', 'icu', 'alarm', 'alert', 'news2', 'shock'].includes(t))) {
-    ['sepsis', 'deterioration', 'sirs', 'infection', 'shock', 'mortality', 'news2', 'telemetry', 'tachycardia', 'hypotension', 'sofa', 'burdick', 'michard'].forEach(t => expanded.add(t));
-  }
-
-  // ECG, Arrhythmia & HRV
-  if (lowerTokens.some(t => ['ecg', 'hrv', 'arrhythmia', 'qrs', 'sdnn', 'rmssd', 'poincare'].includes(t))) {
-    ['electrocardiogram', 'r-peak', 'qrs', 'depolarization', 'arrhythmia', 'hrv', 'sdnn', 'rmssd', 'poincare', 'autonomic', 'parasympathetic', 'sympathetic', 'ptb-xl'].forEach(t => expanded.add(t));
-  }
-
-  // Equations and Mathematical Models
-  if (lowerTokens.some(t => ['equation', 'equations', 'formula', 'formulas', 'math', 'mathematical', 'model', 'physics', 'law', 'laws'].includes(t))) {
-    ['moens', 'korteweg', 'hughes', 'beer', 'lambert', 'ratio', 'elasticity', 'interferometry', 'pos', 'windkessel', 'poincare', 'pinn', 'navier', 'stokes'].forEach(t => expanded.add(t));
+  // Biomedical & Health (only if query explicitly references vital signs or medicine)
+  if (lowerTokens.some(t => ['vital', 'signs', 'physiological', 'hemodynamic', 'ppg', 'ecg', 'blood', 'pressure', 'sepsis', 'radar'].includes(t))) {
+    ['physiological', 'hemodynamic', 'monitoring', 'sensor', 'signal', 'validation'].forEach(t => expanded.add(t));
   }
 
   return Array.from(expanded);
 }
 
-// Universal query intent detection across Humanities, AI/CS, and Sciences
+// Universal query intent detection across all disciplines
 function detectQueryIntent(tokens: string[]): {
+  isMethod: boolean;
+  isTheoryOrMath: boolean;
+  isEmpiricalOrDataset: boolean;
+  isBenchmark: boolean;
+  isLimitation: boolean;
+  isSynthesisOrReview: boolean;
   isHardware: boolean;
   isMath: boolean;
   isGroundTruth: boolean;
-  isBenchmark: boolean;
-  isLimitation: boolean;
-  isLiteraryCloseReading: boolean;
-  isSynthesisOrReview: boolean;
 } {
   const lower = tokens.map(t => t.toLowerCase());
+  const isMethod = lower.some(t => ['method', 'methodology', 'approach', 'technique', 'pipeline', 'algorithm', 'system', 'architecture', 'protocol', 'design'].includes(t));
+  const isTheoryOrMath = lower.some(t => ['theory', 'theoretical', 'framework', 'hypothesis', 'thesis', 'equation', 'equations', 'formula', 'math', 'derivation', 'proof', 'model'].includes(t));
+  const isEmpiricalOrDataset = lower.some(t => ['dataset', 'datasets', 'cohort', 'corpus', 'sample', 'data', 'empirical', 'experiment', 'experiments', 'trials', 'ground', 'truth'].includes(t));
+  const isBenchmark = lower.some(t => ['benchmark', 'benchmarks', 'accuracy', 'error', 'f1', 'bleu', 'score', 'evaluation', 'results', 'metrics', 'performance', 'table'].includes(t));
+  const isLimitation = lower.some(t => ['limitation', 'limitations', 'threat', 'threats', 'failure', 'drawback', 'constraint', 'weakness', 'bias', 'drift', 'bottleneck'].includes(t));
+  const isSynthesisOrReview = lower.some(t => ['synthesis', 'synthesize', 'compare', 'contrast', 'review', 'literature', 'matrix', 'cross-paper', 'consensus', 'debate', 'dispute'].includes(t));
+  const isHardware = lower.some(t => ['hardware', 'device', 'sensor', 'transducer', 'chip', 'gpu', 'tpu', 'acquisition'].includes(t));
+
   return {
-    isHardware: lower.some(t => ['hardware', 'device', 'sensor', 'sensors', 'transducer', 'led', 'leds', 'photodiode', 'afe', 'adc', 'wavelength', 'sampling', 'chip', 'gpu', 'tpu'].includes(t)),
-    isMath: lower.some(t => ['equation', 'equations', 'formula', 'formulas', 'math', 'mathematical', 'physics', 'moens', 'hughes', 'beer', 'lambert', 'model', 'laws', 'derivation', 'pos', 'interferometry', 'loss', 'softmax'].includes(t)),
-    isGroundTruth: lower.some(t => ['ground', 'truth', 'reference', 'gold', 'standard', 'dataset', 'datasets', 'cohort', 'corpus', 'mimic', 'vitaldb', 'capnobase', 'ubfc', 'cannula', 'a-line', 'catheter'].includes(t)),
-    isBenchmark: lower.some(t => ['benchmark', 'benchmarks', 'accuracy', 'error', 'mae', 'rmse', 'auroc', 'f1', 'bleu', 'performance', 'results', 'table', 'evaluation', 'metric', 'metrics'].includes(t)),
-    isLimitation: lower.some(t => ['limitation', 'limitations', 'artifact', 'artifacts', 'motion', 'failure', 'melanin', 'skin', 'bias', 'pep', 'drift', 'bottleneck'].includes(t)),
-    isLiteraryCloseReading: lower.some(t => ['passage', 'quote', 'quotation', 'soliloquy', 'metaphor', 'trope', 'rhetoric', 'deixis', 'focalization', 'irony', 'textual', 'close', 'reading'].includes(t)),
-    isSynthesisOrReview: lower.some(t => ['synthesis', 'synthesize', 'compare', 'contrast', 'review', 'literature', 'matrix', 'cross-paper', 'consensus', 'debate', 'dispute'].includes(t)),
+    isMethod,
+    isTheoryOrMath,
+    isEmpiricalOrDataset,
+    isBenchmark,
+    isLimitation,
+    isSynthesisOrReview,
+    isHardware,
+    isMath: isTheoryOrMath,
+    isGroundTruth: isEmpiricalOrDataset,
   };
 }
 
 export interface SemanticRoute {
-  category: 'IR_UWB' | 'FMCW' | 'MIMO' | 'WIFI_CSI' | 'CW_DOPPLER' | 'RADAR_SCG' | 'CUFFLESS_BP' | 'RPPG' | 'ECG_HRV' | 'RESPIRATORY' | 'SEPSIS_DETERIORATION' | 'GENERAL';
+  category: string;
   targetPaperIds: string[];
   contrastPaperIds?: string[];
   directive: string;
 }
 
-export function routeQuery(query: string): SemanticRoute {
+export function routeQuery(query: string, papers: VitalSignPaper[] = []): SemanticRoute {
   const q = query.toLowerCase();
+  const matchedPaperIds: string[] = [];
 
-  // 1. IR-UWB Impulse Radar
-  if (q.includes('iruwb') || q.includes('ir-uwb') || (q.includes('uwb') && (q.includes('radar') || q.includes('impulse') || q.includes('through-wall') || q.includes('rubble') || q.includes('trapped')))) {
-    const isComparison = q.includes('fmcw') || q.includes('compare') || q.includes('difference') || q.includes('vs');
+  // Match against active session paper titles and authors dynamically
+  for (const paper of papers) {
+    const titleLower = paper.title.toLowerCase();
+    const authorsLower = paper.authors.toLowerCase();
+    
+    // Check if paper title words or author surnames appear in the query
+    const titleKeyWords = titleLower.split(/[^a-z0-9]/).filter(w => w.length > 4 && !STOP_WORDS.has(w));
+    const titleMatch = titleKeyWords.filter(w => q.includes(w)).length >= 2;
+    const authorMatch = authorsLower.split(/[^a-z]/).filter(a => a.length > 3).some(a => q.includes(a));
+
+    if (titleMatch || authorMatch || (paper.id && q.includes(paper.id.toLowerCase()))) {
+      matchedPaperIds.push(paper.id);
+    }
+  }
+
+  if (matchedPaperIds.length > 0) {
     return {
-      category: 'IR_UWB',
-      targetPaperIds: isComparison ? ['paper-29', 'paper-28'] : ['paper-29'],
-      contrastPaperIds: isComparison ? [] : ['paper-28'],
-      directive: 'CRITICAL TECHNICAL FOCUS: The query specifically investigates Impulse Radio Ultra-Wideband (IR-UWB) Radar (Paper 29: Li et al.). IR-UWB transmits sub-nanosecond baseband Gaussian pulses in the time domain, utilizing Time-of-Flight range gating and Singular Value Decomposition (SVD) for through-wall and rubble penetration. Contrast this with continuous-wave FMCW radar (Paper 28), ensuring the distinct physical and mathematical foundations of IR-UWB are clearly articulated without conflating the two.'
+      category: 'MATCHED_PAPERS',
+      targetPaperIds: matchedPaperIds,
+      directive: `FOCUSED SCHOLARLY INQUIRY: The inquiry directly references specific papers in your library (${matchedPaperIds.join(', ')}). Prioritize evidence and verbatim citations directly from these manuscripts.`
     };
   }
 
-  // 2. 60 GHz mmWave FMCW Radar
-  if (q.includes('fmcw') || (q.includes('60 ghz') && q.includes('radar')) || (q.includes('mmwave') && !q.includes('mimo') && !q.includes('uwb'))) {
+  // Cross-paper comparison / synthesis query
+  if (q.includes('compare') || q.includes('contrast') || q.includes('versus') || q.includes('vs') || q.includes('synthesis') || q.includes('matrix')) {
     return {
-      category: 'FMCW',
-      targetPaperIds: ['paper-28'],
-      directive: 'CRITICAL TECHNICAL FOCUS: The query focuses on Frequency-Modulated Continuous-Wave (FMCW) millimeter-wave radar (Paper 28). Highlight linear chirp synthesis, intermediate frequency (IF) beat tone generation, and phase interferometry (4*pi/lambda * Delta_x) for sub-millimeter chest wall displacement tracking.'
-    };
-  }
-
-  // 3. MIMO Radar Beamforming
-  if (q.includes('mimo') || (q.includes('beamforming') && q.includes('radar')) || q.includes('multi-patient')) {
-    return {
-      category: 'MIMO',
-      targetPaperIds: ['paper-30'],
-      directive: 'CRITICAL TECHNICAL FOCUS: The query addresses Multi-Patient separation via MIMO Radar Beamforming (Paper 30). Emphasize virtual Uniform Linear Array (ULA) synthesis, Capon MVDR spatial beamforming, and angle-of-arrival spatial filtering.'
-    };
-  }
-
-  // 4. WiFi CSI
-  if (q.includes('csi') || q.includes('wifi') || q.includes('channel state information')) {
-    return {
-      category: 'WIFI_CSI',
-      targetPaperIds: ['paper-31'],
-      directive: 'CRITICAL TECHNICAL FOCUS: The query addresses WiFi Channel State Information (CSI) sensing (Paper 31). Delineate OFDM subcarrier amplitude/phase dynamics, Fresnel zone diffraction boundaries, and subcarrier phase sanitization.'
-    };
-  }
-
-  // 5. 24 GHz CW Doppler Radar
-  if ((q.includes('doppler') && q.includes('radar')) || q.includes('24 ghz') || (q.includes('apnea') && q.includes('radar'))) {
-    return {
-      category: 'CW_DOPPLER',
-      targetPaperIds: ['paper-32'],
-      directive: 'CRITICAL TECHNICAL FOCUS: The query addresses 24 GHz Continuous-Wave (CW) Doppler Radar (Paper 32). Emphasize quadrature homodyne demodulation, chest-abdomen recoil velocity envelopes, and the differentiation of central vs obstructive sleep apnea.'
-    };
-  }
-
-  // 6. Precordial Radar SCG
-  if (q.includes('seismocardiography') || q.includes('scg') || q.includes('precordial') || q.includes('aortic valve opening') || q.includes('avo')) {
-    return {
-      category: 'RADAR_SCG',
-      targetPaperIds: ['paper-33'],
-      directive: 'CRITICAL TECHNICAL FOCUS: The query addresses Radar Seismocardiography (SCG) (Paper 33). Detail the second-derivative acceleration analysis decoupling Aortic Valve Opening (AVO), Mitral Valve Closure (MVC), and systolic timing intervals (PEP, LVET).'
-    };
-  }
-
-  // 7. Cuffless Blood Pressure & PTT
-  if (q.includes('cuffless') || (q.includes('blood pressure') && (q.includes('ptt') || q.includes('pwv') || q.includes('pat') || q.includes('moens') || q.includes('hughes') || q.includes('pinn')))) {
-    return {
-      category: 'CUFFLESS_BP',
-      targetPaperIds: ['paper-07', 'paper-08', 'paper-09', 'paper-10', 'paper-11', 'paper-12', 'paper-13'],
-      directive: 'CRITICAL TECHNICAL FOCUS: Cuffless Blood Pressure Estimation (Papers 7–13). Rigorously explain the Moens-Korteweg equation, Hughes arterial elasticity model, and hemodynamic Navier-Stokes PINN constraints.'
-    };
-  }
-
-  // 8. Remote rPPG
-  if (q.includes('rppg') || (q.includes('camera') && (q.includes('ppg') || q.includes('facial') || q.includes('video') || q.includes('melanin')))) {
-    return {
-      category: 'RPPG',
-      targetPaperIds: ['paper-21', 'paper-22', 'paper-23', 'paper-24', 'paper-25', 'paper-26', 'paper-27'],
-      directive: 'CRITICAL TECHNICAL FOCUS: Remote Photoplethysmography (rPPG) (Papers 21–27). Detail the Shafer dichromatic reflection model, Plane-Orthogonal-to-Skin (POS) projection, and Fitzpatrick skin phototype melanin optical attenuation.'
-    };
-  }
-
-  // 9. ECG & HRV
-  if (q.includes('ecg') || q.includes('electrocardiogram') || q.includes('hrv') || q.includes('arrhythmia') || q.includes('qrs')) {
-    return {
-      category: 'ECG_HRV',
-      targetPaperIds: ['paper-14', 'paper-15', 'paper-16', 'paper-17', 'paper-18', 'paper-19', 'paper-20'],
-      directive: 'CRITICAL TECHNICAL FOCUS: Electrocardiography & Autonomic HRV (Papers 14–20). Detail QRS fiducial detection, SDNN/RMSSD time-domain metrics, and LF/HF spectral sympathovagal balance.'
-    };
-  }
-
-  // 10. Respiratory Rate & Capnography
-  if (q.includes('respiratory') || q.includes('breathing') || q.includes('capnography') || q.includes('bioimpedance') || q.includes('stridor')) {
-    return {
-      category: 'RESPIRATORY',
-      targetPaperIds: ['paper-34', 'paper-35', 'paper-36', 'paper-37', 'paper-38'],
-      directive: 'CRITICAL TECHNICAL FOCUS: Respiratory Rate & Capnography (Papers 34–38). Detail the three modulations (BW, AM, FM/RSA), acoustic tracheal stridor monitoring, and bioimpedance pneumography.'
-    };
-  }
-
-  // 11. Sepsis & ICU Deterioration
-  if (q.includes('sepsis') || q.includes('news2') || q.includes('deterioration') || q.includes('shock index') || q.includes('alarm fatigue')) {
-    return {
-      category: 'SEPSIS_DETERIORATION',
-      targetPaperIds: ['paper-39', 'paper-40', 'paper-41', 'paper-42', 'paper-43'],
-      directive: 'CRITICAL TECHNICAL FOCUS: Early Sepsis & Clinical Deterioration Surveillance (Papers 39–43). Detail continuous dynamic Shock Index (HR/SBP), non-linear NEWS2 penalty functions, and multi-parameter trajectory modeling.'
+      category: 'COMPARATIVE_SYNTHESIS',
+      targetPaperIds: [],
+      directive: 'CROSS-PAPER COMPARATIVE SYNTHESIS: Focus on structuring comparative dimensions across papers, highlighting scholarly consensus, methodological differences, and empirical divergence.'
     };
   }
 
   return {
-    category: 'GENERAL',
+    category: 'GENERAL_ACADEMIC',
     targetPaperIds: [],
     directive: ''
   };
@@ -270,14 +175,34 @@ export class RAGEngine {
   private avgDocLength: number = 150;
   private chunkTokenCounts = new Map<string, number>();
 
-  constructor(customPapers: VitalSignPaper[] = []) {
-    this.allPapers = [...VITAL_SIGN_PAPERS, ...customPapers];
+  constructor(papers: VitalSignPaper[] = []) {
+    this.allPapers = [...papers];
     this.reindex();
   }
 
-  public updatePapers(customPapers: VitalSignPaper[] = []) {
-    this.allPapers = [...VITAL_SIGN_PAPERS, ...customPapers];
+  /**
+   * Replaces the currently indexed corpus with the given papers.
+   * Enables clean, fresh sessions for any user domain without lingering prior indexes.
+   */
+  public setPapers(papers: VitalSignPaper[] = []) {
+    this.allPapers = [...papers];
     this.reindex();
+  }
+
+  public updatePapers(papers: VitalSignPaper[] = []) {
+    this.allPapers = [...papers];
+    this.reindex();
+  }
+
+  /**
+   * Resets the RAG index entirely to an empty state for a fresh session.
+   */
+  public clear() {
+    this.allPapers = [];
+    this.allChunks = [];
+    this.idfMap.clear();
+    this.chunkTokenCounts.clear();
+    this.avgDocLength = 150;
   }
 
   public getCorpusStats() {
@@ -347,7 +272,7 @@ export class RAGEngine {
     
     const queryTokens = expandQueryTokens(rawTokens);
     const intent = detectQueryIntent(rawTokens);
-    const route = routeQuery(query);
+    const route = routeQuery(query, this.allPapers);
 
     // Filter chunks by modality if specified
     const validPaperIds = new Set(
@@ -590,7 +515,7 @@ ${c.content}
 You synthesize peer-reviewed academic manuscripts, literary treatises, computational architectures, and empirical studies with publication-grade rigor.`;
 
     const activePersona = domainGuideline?.trim() || defaultPersona;
-    const route = routeQuery(query);
+    const route = routeQuery(query, this.allPapers);
     const routingDirective = route.directive
       ? `\n### DOMAIN-ROUTED TECHNICAL DIRECTIVE:\n${route.directive}\n`
       : '';

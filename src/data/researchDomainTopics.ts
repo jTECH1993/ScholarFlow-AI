@@ -17,192 +17,216 @@ export interface DomainTopicMeta {
 
 export const DOMAIN_TOPICS: DomainTopicMeta[] = [
   {
-    id: 'vital-signs-ppg',
-    name: 'Vital Signs & PPG',
-    badge: 'Optical Sensing',
-    iconName: 'Heart',
-    color: 'text-rose-500 bg-rose-50 border-rose-200',
-    textColor: 'text-rose-600',
-    borderHover: 'hover:border-rose-300 hover:bg-rose-50/50',
-    description: 'Photoplethysmography (PPG), pulse oximetry (SpO2), arterial stiffness index, and vascular elasticity modeling.',
+    id: 'general-academic',
+    name: 'Universal Academic Research',
+    badge: 'Cross-Disciplinary',
+    iconName: 'Layers',
+    color: 'text-teal-600 bg-teal-50 border-teal-200',
+    textColor: 'text-teal-700',
+    borderHover: 'hover:border-teal-300 hover:bg-teal-50/50',
+    description: 'Literature synthesis, methodology extraction, empirical benchmark analysis, and peer-reviewed rigor across all scholarly disciplines.',
     suggestedQuestions: [
-      'What are the primary filtering methods for motion artifact cancellation in wearable PPG?',
-      'How is the Ratio-of-Ratios R = (AC660/DC660)/(AC940/DC940) calibrated against blood gas analysis?',
-      'Explain the second-derivative PPG (SDPPG) b/a ratio for arterial stiffness assessment.',
-      'Compare PPG peak detection F1 scores across CapnoBase and MIMIC-III subsets.',
-      'What deep learning architectures reconstruct corrupted PPG during vigorous treadmill ambulation?'
+      'Synthesize the core theoretical and empirical contributions across the ingested papers.',
+      'What are the primary methodological differences and baselines across these studies?',
+      'Identify key consensus points, controversies, and open research questions in this corpus.',
+      'Extract mathematical formulations, algorithmic models, and experimental evaluation metrics.',
+      'What threats to validity, limitations, and sample constraints were disclosed by the authors?'
     ],
     examplePills: [
-      { label: 'Summarize PPG filtering', prompt: 'Summarize the primary filtering and artifact removal methods for ambulatory PPG.' },
-      { label: 'Explain SDPPG b/a ratio', prompt: 'Explain the physiological meaning of the second-derivative PPG (SDPPG) b/a and d/a wave ratios.' },
-      { label: 'Extract SpO2 formulas', prompt: 'Show me the mathematical calibration equations for dual-wavelength SpO2 estimation.' },
-      { label: 'Compare PPG datasets', prompt: 'Compare the CapnoBase, MIMIC-III, and PPG-DaLiA datasets used in these papers.' }
+      { label: 'Synthesize contributions', prompt: 'Synthesize the primary thesis, methodology, and key empirical findings across the indexed papers.' },
+      { label: 'Compare methodologies', prompt: 'Compare the study designs, experimental pipelines, and evaluation metrics across all manuscripts.' },
+      { label: 'Extract benchmarks', prompt: 'Extract reported baseline benchmarks, error bounds, and statistical significance levels into a comparative matrix.' },
+      { label: 'Identify limitations', prompt: 'What methodological limitations, boundary conditions, and threats to validity do the authors highlight?' },
+      { label: 'Theoretical models', prompt: 'Explain the core theoretical frameworks, loss functions, and governing equations formulated in these papers.' }
     ],
-    relevantKeywords: ['PPG', 'SpO2', 'SDPPG', 'Photoplethysmography', 'Oximetry', 'CapnoBase'],
-    filterModality: 'Photoplethysmography (PPG)'
+    relevantKeywords: ['methodology', 'empirical', 'framework', 'synthesis', 'benchmark', 'limitations', 'literature'],
+    filterModality: 'all'
   },
   {
-    id: 'ecg-rppg',
-    name: 'ECG & rPPG',
-    badge: 'Remote & Contact Bio-potentials',
-    iconName: 'Activity',
-    color: 'text-sky-500 bg-sky-50 border-sky-200',
-    textColor: 'text-sky-600',
-    borderHover: 'hover:border-sky-300 hover:bg-sky-50/50',
-    description: '12-lead & single-lead ECG fiducials, heart rate variability (HRV), and camera-based remote photoplethysmography (rPPG).',
-    suggestedQuestions: [
-      'How does camera-based rPPG isolate micro-vascular blood volume pulses under varying ambient illumination?',
-      'Detail the QRS detection and Pan-Tompkins algorithm benchmarks in ambulatory ECG recordings.',
-      'Explain how chrominance-based (CHROM) and POS rPPG plane orthogonal projections eliminate head motion noise.',
-      'What HRV metrics (SDNN, RMSSD, LF/HF ratio) demonstrate the highest statistical sensitivity to autonomic stress?',
-      'Compare 3D-CNN and PhysNet spatial-temporal attention networks for facial remote heart rate estimation.'
-    ],
-    examplePills: [
-      { label: 'Explain CHROM rPPG', prompt: 'How does the CHROM algorithm project RGB facial video into skin chrominance space to extract pulse?' },
-      { label: 'HRV metrics breakdown', prompt: 'Explain the mathematical definition and clinical interpretation of SDNN, RMSSD, and LF/HF ratio.' },
-      { label: 'Compare rPPG vs contact PPG', prompt: 'Compare camera-based rPPG accuracy against gold-standard finger clip PPG.' },
-      { label: 'Pan-Tompkins QRS algorithm', prompt: 'Detail the signal processing stages of the Pan-Tompkins ECG QRS detection pipeline.' }
-    ],
-    relevantKeywords: ['ECG', 'rPPG', 'HRV', 'CHROM', 'PhysNet', 'Pan-Tompkins', 'RMSSD'],
-    filterModality: 'Remote Camera rPPG'
-  },
-  {
-    id: 'fmcw-radar',
-    name: 'FMCW Radar',
-    badge: 'RF Remote Sensing',
-    iconName: 'Radio',
-    color: 'text-cyan-500 bg-cyan-50 border-cyan-200',
-    textColor: 'text-cyan-600',
-    borderHover: 'hover:border-cyan-300 hover:bg-cyan-50/50',
-    description: 'Frequency Modulated Continuous Wave (FMCW) and Impulse Radio UWB (IR-UWB) mmWave vital signs radar.',
-    suggestedQuestions: [
-      'What are the main methods for heart rate and respiration estimation using FMCW and UWB radar?',
-      'How is phase unwrapping and arctangent demodulation performed on chest displacement radar signals?',
-      'Compare 60-64 GHz FMCW chirp parameters against 3-10 GHz IR-UWB for sub-millimeter chest wall tracking.',
-      'How is static clutter (walls, furniture) attenuated using state-space projection and high-pass filtering?',
-      'What signal processing separates tiny cardiac micro-motions (0.05 mm) from large respiratory excursions (5-10 mm)?'
-    ],
-    examplePills: [
-      { label: 'FMCW heart rate methods', prompt: 'What are the main methods for heart rate estimation using FMCW and UWB radar?' },
-      { label: 'Phase demodulation steps', prompt: 'Explain the mathematical steps of arctangent demodulation and phase unwrapping for chest displacement.' },
-      { label: 'Radar clutter removal', prompt: 'What filtering techniques remove static environmental clutter from radar range-Doppler maps?' },
-      { label: 'UWB vs FMCW comparison', prompt: 'Compare IR-UWB impulse radio and FMCW continuous wave radar for contactless vitals.' }
-    ],
-    relevantKeywords: ['Radar', 'FMCW', 'UWB', 'IR-UWB', 'mmWave', 'Chirp', 'Doppler'],
-    filterModality: 'Radar & RF Sensing'
-  },
-  {
-    id: 'biomedical-signal-processing',
-    name: 'Biomedical Signal Processing',
-    badge: 'DSP & Decompositions',
-    iconName: 'Activity',
-    color: 'text-purple-500 bg-purple-50 border-purple-200',
-    textColor: 'text-purple-600',
-    borderHover: 'hover:border-purple-300 hover:bg-purple-50/50',
-    description: 'Empirical Mode Decomposition (EMD/EEMD), Variational Mode Decomposition (VMD), wavelets, and adaptive LMS/RLS filters.',
-    suggestedQuestions: [
-      'How does Variational Mode Decomposition (VMD) solve the mode mixing dilemma present in standard EMD?',
-      'Explain the mathematical formulation of the continuous wavelet transform (CWT) using Morlet and Mexican hat wavelets.',
-      'Detail the adaptive recursive least squares (RLS) algorithm for real-time reference noise cancellation.',
-      'How is Independent Component Analysis (ICA) used to blind-source separate maternal and fetal ECG signals?',
-      'Explain spectral entropy and spectral energy ratio for automated signal quality indexing (SQI).'
-    ],
-    examplePills: [
-      { label: 'Compare EMD vs VMD', prompt: 'Compare Empirical Mode Decomposition (EMD) and Variational Mode Decomposition (VMD) for bio-signals.' },
-      { label: 'Wavelet transform in vitals', prompt: 'Explain the application of continuous wavelet transform (CWT) in physiological signal analysis.' },
-      { label: 'Adaptive filtering (RLS/LMS)', prompt: 'How do normalized LMS and RLS adaptive filters suppress motion artifacts in real-time?' },
-      { label: 'Signal Quality Indices (SQI)', prompt: 'Show me the mathematical definitions of skewness, kurtosis, and spectral entropy SQIs.' }
-    ],
-    relevantKeywords: ['VMD', 'EEMD', 'Wavelet', 'RLS', 'LMS', 'ICA', 'Decomposition', 'DSP'],
-    filterModality: 'Biomedical Signal Processing'
-  },
-  {
-    id: 'ai-deep-learning',
-    name: 'AI / Deep Learning',
-    badge: 'Neural Architectures',
+    id: 'cs-ai',
+    name: 'Computer Science & AI',
+    badge: 'Algorithms & Models',
     iconName: 'Cpu',
     color: 'text-indigo-500 bg-indigo-50 border-indigo-200',
     textColor: 'text-indigo-600',
     borderHover: 'hover:border-indigo-300 hover:bg-indigo-50/50',
-    description: '1D/2D CNNs, Bi-LSTM, Transformers, Self-Supervised contrastive learning, and Physics-Informed Neural Networks (PINNs).',
+    description: 'Transformer architectures, self-attention, RAG retrieval pipelines, parameter-efficient fine-tuning, and empirical evaluation metrics.',
     suggestedQuestions: [
-      'What neural architectures (e.g. CNN-LSTM, Attention Transformers) yield lowest MAE in vital sign estimation?',
-      'How do Physics-Informed Neural Networks (PINNs) enforce Navier-Stokes and Moens-Korteweg vascular constraints?',
-      'Explain self-supervised contrastive learning (SimCLR, TS-TCC) for pre-training unlabelled bio-sensor time series.',
-      'Detail ablation studies showing the performance contribution of spatial vs temporal attention blocks.',
-      'How are domain adaptation and transfer learning utilized to bridge synthetic radar and real patient cohorts?'
+      'Explain the mathematical formulation of multi-head scaled dot-product attention and computational complexity.',
+      'Compare dense vector semantic search against BM25 sparse lexical matching and reciprocal rank fusion.',
+      'What are the latency, memory footprint, and FLOPs bottlenecks during LLM prefill vs autoregressive decode?',
+      'Detail ablation studies showing the performance contribution of individual architectural components.',
+      'How do parameter-efficient fine-tuning techniques (e.g. LoRA, QLoRA) reduce GPU VRAM allocations?'
     ],
     examplePills: [
-      { label: 'CNN-LSTM architectures', prompt: 'What CNN-LSTM architectures are used for vital sign regression and how do they perform?' },
-      { label: 'Physics-Informed PINNs', prompt: 'How do Physics-Informed Neural Networks (PINNs) integrate physiological fluid mechanics into loss functions?' },
-      { label: 'Self-supervised pre-training', prompt: 'Explain contrastive learning for unlabeled physiological biosensor waveforms.' },
-      { label: 'Model latency & params', prompt: 'Compare parameter size, floating-point operations (FLOPs), and inference latency across published models.' }
+      { label: 'Attention complexity', prompt: 'Explain the mathematical formulation and memory scaling of self-attention mechanisms.' },
+      { label: 'Dense vs Sparse RAG', prompt: 'Compare dense embedding search vs BM25 sparse keyword matching and explain Reciprocal Rank Fusion.' },
+      { label: 'PEFT & LoRA tuning', prompt: 'How does LoRA low-rank decomposition enable parameter-efficient model adaptation?' },
+      { label: 'Inference benchmarks', prompt: 'Compare latency, throughput, parameter count, and benchmark accuracies across the proposed models.' }
     ],
-    relevantKeywords: ['Deep Learning', 'CNN', 'LSTM', 'Transformer', 'PINN', 'Self-Supervised', 'Attention'],
+    relevantKeywords: ['Transformer', 'Attention', 'RAG', 'LoRA', 'Embeddings', 'LLM', 'Inference', 'Benchmark', 'PyTorch'],
     filterModality: 'all'
   },
   {
-    id: 'healthcare-ehealth',
-    name: 'Healthcare & eHealth',
-    badge: 'Clinical Telemetry & ICU',
+    id: 'social-sciences',
+    name: 'Social Sciences & Economics',
+    badge: 'Empirical & Policy',
     iconName: 'ShieldPlus',
-    color: 'text-emerald-500 bg-emerald-50 border-emerald-200',
-    textColor: 'text-emerald-600',
-    borderHover: 'hover:border-emerald-300 hover:bg-emerald-50/50',
-    description: 'Continuous ICU patient telemetry, sepsis early warning systems, ambulatory home monitoring, and medical device regulations.',
+    color: 'text-amber-500 bg-amber-50 border-amber-200',
+    textColor: 'text-amber-600',
+    borderHover: 'hover:border-amber-300 hover:bg-amber-50/50',
+    description: 'Econometric identification, randomized control trials, causal inference, public policy, and socio-behavioral empirical modeling.',
     suggestedQuestions: [
-      'How do continuous non-invasive vital sign sensors improve early sepsis detection in the ICU (e.g. SOFA/NEWS2 scores)?',
-      'What are the FDA and ISO 81060-2 international standards for cuffless blood pressure monitor validation?',
-      'Explain patient privacy, end-to-end encryption, and zero-trust session boundaries in hospital cloud telemetry.',
-      'How do edge computing gateways preprocess raw waveform streams before transmitting clinical alerts to EHR systems?',
-      'Synthesize clinical trial outcomes comparing touchless radar monitoring vs standard adhesive electrodes in sleep clinics.'
+      'What causal identification strategies (e.g. difference-in-differences, instrumental variables) were utilized?',
+      'How do the authors control for confounding variables, selection bias, and endogeneity?',
+      'Summarize empirical regression coefficients, standard error clustering, and statistical significance.',
+      'Compare policy recommendations and institutional implications across these publications.',
+      'What demographic cohorts and survey sample sizes substantiate the empirical conclusions?'
     ],
     examplePills: [
-      { label: 'ICU sepsis early warning', prompt: 'How do continuous multimodal vitals feed into early sepsis detection (NEWS2 / qSOFA) algorithms?' },
-      { label: 'FDA / ISO validation rules', prompt: 'What are the required error limits (AAMI SP10 / ISO 81060-2) for non-invasive medical monitoring?' },
-      { label: 'Remote patient monitoring', prompt: 'Summarize clinical trials validating touchless monitoring for elderly care and sleep apnea.' },
-      { label: 'Clinical telemetry latency', prompt: 'What are acceptable packet loss and latency tolerances for real-time ICU arrhythmia alarms?' }
+      { label: 'Causal identification', prompt: 'Analyze the causal identification strategy and instruments used to address endogeneity.' },
+      { label: 'Regression findings', prompt: 'Summarize the regression coefficients, effect sizes, and p-values reported in the empirical tables.' },
+      { label: 'Policy implications', prompt: 'Synthesize the actionable policy recommendations and socio-economic takeaways.' },
+      { label: 'Sample methodology', prompt: 'What sample populations, survey instruments, or longitudinal datasets were analyzed?' }
     ],
-    relevantKeywords: ['ICU', 'Sepsis', 'eHealth', 'Telemetry', 'FDA', 'AAMI', 'NEWS2', 'Clinical'],
-    filterModality: 'ICU Sepsis & Deterioration'
+    relevantKeywords: ['Econometrics', 'Causal', 'Policy', 'Empirical', 'Regression', 'Endogeneity', 'Cohort', 'Survey'],
+    filterModality: 'all'
+  },
+  {
+    id: 'humanities-literature',
+    name: 'Literature & Humanities',
+    badge: 'Textual & Hermeneutics',
+    iconName: 'Layers',
+    color: 'text-purple-500 bg-purple-50 border-purple-200',
+    textColor: 'text-purple-600',
+    borderHover: 'hover:border-purple-300 hover:bg-purple-50/50',
+    description: 'Close textual reading, narrative structure, stylistic analysis, historical contextualization, and hermeneutic theory.',
+    suggestedQuestions: [
+      'Perform a close textual reading of the primary passages cited in these manuscripts.',
+      'How do the authors apply narratological frameworks (e.g. focalization, free indirect discourse)?',
+      'Examine the historical, socio-cultural, and philosophical context framing the arguments.',
+      'What metaphorical tropes, rhetorical structures, and syntactic patterns are identified?',
+      'Contrast the theoretical stances of critical theorists cited throughout the texts.'
+    ],
+    examplePills: [
+      { label: 'Close textual reading', prompt: 'Provide a detailed close reading of key verbatim quotations analyzing tone and syntax.' },
+      { label: 'Narrative theory', prompt: 'How are narratological concepts like focalization and discourse analyzed in these papers?' },
+      { label: 'Historical context', prompt: 'Trace the socio-historical and literary movements that ground the authors\' arguments.' },
+      { label: 'Theoretical debate', prompt: 'Contrast the critical theories and hermeneutic traditions engaged across these studies.' }
+    ],
+    relevantKeywords: ['Literature', 'Narrative', 'Hermeneutics', 'Textual', 'Discourse', 'Rhetoric', 'Poetics', 'Criticism'],
+    filterModality: 'all'
+  },
+  {
+    id: 'natural-sciences',
+    name: 'Natural Sciences & Physics',
+    badge: 'Empirical & Physical',
+    iconName: 'Radio',
+    color: 'text-sky-500 bg-sky-50 border-sky-200',
+    textColor: 'text-sky-600',
+    borderHover: 'hover:border-sky-300 hover:bg-sky-50/50',
+    description: 'Physical laws, governing differential equations, thermodynamic constraints, laboratory protocols, and quantitative measurements.',
+    suggestedQuestions: [
+      'Derive the primary mathematical models and physical governing equations presented.',
+      'What experimental apparatus, measurement instruments, and calibration protocols were employed?',
+      'How do observed laboratory measurements compare against theoretical analytical solutions?',
+      'What measurement uncertainties, error propagations, and systematic biases are accounted for?',
+      'Synthesize empirical phase diagrams, thermodynamic equilibria, or spectral observations.'
+    ],
+    examplePills: [
+      { label: 'Governing equations', prompt: 'Extract and explain the mathematical derivations and physical governing equations.' },
+      { label: 'Experimental setup', prompt: 'Detail the laboratory apparatus, sensor calibration, and experimental protocol.' },
+      { label: 'Error propagation', prompt: 'How do the authors quantify experimental uncertainties and systematic errors?' },
+      { label: 'Empirical vs Theory', prompt: 'Compare the empirical laboratory observations against theoretical predictions.' }
+    ],
+    relevantKeywords: ['Physics', 'Equations', 'Derivation', 'Experimental', 'Measurement', 'Thermodynamic', 'Uncertainty'],
+    filterModality: 'all'
+  },
+  {
+    id: 'biomedical-sensing',
+    name: 'Biomedical & Signal Sensing',
+    badge: 'Physiological Telemetry',
+    iconName: 'Activity',
+    color: 'text-rose-500 bg-rose-50 border-rose-200',
+    textColor: 'text-rose-600',
+    borderHover: 'hover:border-rose-300 hover:bg-rose-50/50',
+    description: 'Physiological signal acquisition, PPG optics, ECG fiducials, contactless RF radar, and clinical gold-standard validation.',
+    suggestedQuestions: [
+      'How do wearable and contactless sensors capture cardiopulmonary vital signs?',
+      'What filtering and signal decomposition algorithms suppress motion artifacts?',
+      'Compare sensor accuracy against clinical gold standards (e.g. arterial line, polysomnography).',
+      'What are the physiological calibration models relating pulse wave dynamics to blood pressure?',
+      'Summarize clinical validation protocols under regulatory standards (IEEE 1708, ISO 81060-2).'
+    ],
+    examplePills: [
+      { label: 'Physiological sensors', prompt: 'Compare optical PPG, bioimpedance, and radar sensing principles for vital monitoring.' },
+      { label: 'Artifact filtering', prompt: 'What DSP and adaptive filtering methods isolate true biological waveforms from movement?' },
+      { label: 'Clinical validation', prompt: 'How are algorithms validated against clinical ground truths and patient cohorts?' },
+      { label: 'Calibration models', prompt: 'Explain the mathematical models relating pulse transit time to arterial elasticity.' }
+    ],
+    relevantKeywords: ['PPG', 'ECG', 'Radar', 'Sensors', 'Vital Signs', 'Hemodynamics', 'Clinical', 'AAMI'],
+    filterModality: 'all'
   }
 ];
 
 export const DEMO_PROJECTS: ResearchProjectItem[] = [
   {
     id: 'proj-1',
-    title: 'Vital Sign Estimation using UWB Radar',
-    paperCount: 12,
+    title: 'Transformer Attention & Efficient KV-Cache Architectures',
+    paperCount: 8,
     updatedAgo: 'Updated 2 days ago',
-    category: 'Biomedical',
-    description: 'Sub-millimeter chest wall displacement tracking and multi-target heart rate and respiration separation.',
-    tags: ['IR-UWB', 'Heart Rate', 'Respiration', 'Phase Unwrapping']
+    category: 'Computer Science',
+    description: 'Systematic analysis of linear attention, FlashAttention tiling, and parameter-efficient quantization in large models.',
+    tags: ['Attention', 'Transformers', 'Inference', 'Efficiency']
   },
   {
     id: 'proj-2',
-    title: 'Emotion Recognition from Radar Signals',
-    paperCount: 8,
-    updatedAgo: 'Updated 5 days ago',
-    category: 'Signal Processing',
-    description: 'Autonomic nervous system arousal classification using micro-Doppler radar features and HRV patterns.',
-    tags: ['Micro-Doppler', 'Emotion', 'Deep Learning', 'HRV']
+    title: 'Empirical Econometric Modeling & Monetary Policy',
+    paperCount: 6,
+    updatedAgo: 'Updated 4 days ago',
+    category: 'Economics',
+    description: 'Causal identification and vector autoregression on inflation dynamics across OECD countries.',
+    tags: ['Econometrics', 'Causal Inference', 'Macroeconomics', 'Panel Data']
   },
   {
     id: 'proj-3',
-    title: 'Systematic Review: IR-UWB for Healthcare',
-    paperCount: 15,
+    title: 'Narrative Discourse & Hermeneutics in Modern Literature',
+    paperCount: 7,
     updatedAgo: 'Updated 1 week ago',
-    category: 'Literature Review',
-    description: 'Comprehensive PRISMA-compliant meta-analysis of contactless radar vital sign estimation from 2018 to 2026.',
-    tags: ['Systematic Review', 'PRISMA', 'Clinical Validation', 'Meta-Analysis']
+    category: 'Literature',
+    description: 'Investigation into free indirect discourse, epistemic skepticism, and modernist stylistic poetics.',
+    tags: ['Narratology', 'Hermeneutics', 'Modernism', 'Stylistics']
   },
   {
     id: 'proj-4',
-    title: 'Cuffless Continuous Blood Pressure via PPG & ECG',
+    title: 'Non-Invasive Physiological Sensing & Biosensors',
     paperCount: 10,
     updatedAgo: 'Updated 2 weeks ago',
-    category: 'Cardiovascular',
-    description: 'Pulse transit time (PTT) and pulse wave velocity (PWV) models evaluated against arterial lines.',
-    tags: ['PTT', 'Hughes Model', 'Blood Pressure', 'Arterial Line']
+    category: 'Biomedical Engineering',
+    description: 'Cardiopulmonary waveform extraction and clinical gold-standard validation methodologies.',
+    tags: ['Biosensors', 'Signal Processing', 'Clinical Validation', 'Telemetry']
+  }
+];
+
+export const UNIVERSAL_RESEARCH_QUERIES = [
+  {
+    title: 'Cross-Paper Methodological Synthesis',
+    query: 'Synthesize and contrast the methodological frameworks and experimental baselines across the uploaded papers.'
+  },
+  {
+    title: 'Benchmark Metrics & Datasets',
+    query: 'What datasets or corpora were evaluated in these studies, and what were the reported baseline benchmark metrics?'
+  },
+  {
+    title: 'Theoretical Frameworks & Governing Equations',
+    query: 'What core theoretical principles, mathematical formulations, or governing models are proposed in these papers?'
+  },
+  {
+    title: 'Limitations & Critical Research Gaps',
+    query: 'Identify the unaddressed limitations, conflicting findings, and open challenges highlighted by the authors.'
+  },
+  {
+    title: 'Executive Key Contributions',
+    query: 'Provide a structured executive synthesis of the primary scientific contributions and novelty claims of each paper.'
   }
 ];

@@ -37,6 +37,7 @@ interface HomeDashboardProps {
   onSendQuestion: (question: string) => void;
   onOpenUpload: () => void;
   onLoadSampleCorpus: () => void;
+  onResetFreshWorkspace?: () => void;
   onOpenDomainManager: () => void;
   paperCount: number;
   corpusCount: number;
@@ -50,6 +51,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   onSendQuestion,
   onOpenUpload,
   onLoadSampleCorpus,
+  onResetFreshWorkspace,
   onOpenDomainManager,
   paperCount,
   corpusCount,
@@ -524,6 +526,19 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 <BookOpen className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                 <span>Load Sample Library</span>
               </button>
+
+              {onResetFreshWorkspace && (
+                <button
+                  type="button"
+                  id="quick-action-fresh-workspace"
+                  onClick={onResetFreshWorkspace}
+                  className="w-full flex items-center space-x-2.5 p-2.5 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-100 dark:border-slate-800 text-left transition-colors text-xs font-medium text-rose-700 dark:text-rose-400 cursor-pointer"
+                  title="Clear all indexed papers and start a completely fresh blank workspace"
+                >
+                  <Sparkles className="w-4 h-4 text-rose-500" />
+                  <span>Start Fresh / Reset RAG</span>
+                </button>
+              )}
 
               <button
                 type="button"

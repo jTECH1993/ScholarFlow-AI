@@ -36,7 +36,7 @@ import {
   AttachedImage,
   UserProfile 
 } from '../types';
-import { SAMPLE_ACADEMIC_QUERIES } from '../data/vitalSignPapers';
+import { UNIVERSAL_RESEARCH_QUERIES } from '../data/researchDomainTopics';
 import { SAMPLE_CLINICAL_VISUALS, SampleClinicalVisual } from '../data/sampleClinicalImages';
 import { PAPER_EXTENDED_DETAILS } from '../data/paperDetails';
 import { CLINICAL_PERSPECTIVES } from '../data/clinicalPerspectives';
@@ -327,7 +327,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                       Recommended Research Queries
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {SAMPLE_ACADEMIC_QUERIES.map((item, index) => (
+                      {UNIVERSAL_RESEARCH_QUERIES.map((item, index) => (
                         <button
                           key={index}
                           type="button"

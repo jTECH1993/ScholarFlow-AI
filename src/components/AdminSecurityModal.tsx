@@ -21,10 +21,8 @@ export const AdminSecurityModal: React.FC<AdminSecurityModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Recognized admin accounts or passkey
-  const isAuthorizedEmail = currentUser?.email === 'talha93uet@gmail.com' || 
-                            currentUser?.email === 'mtalhajahangir@mnsuet.edu.pk' ||
-                            currentUser?.role === 'Administrator';
+  // Recognized admin role from profile
+  const isAuthorizedEmail = currentUser?.role === 'Administrator';
 
   const handleVerify = (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,7 +97,7 @@ export const AdminSecurityModal: React.FC<AdminSecurityModalProps> = ({
               onClick={handleOneClickAdminVerify}
               className="w-full py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
             >
-              Verify as System Administrator
+              Verify Administrator Role
             </button>
           </div>
         )}

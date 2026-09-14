@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { 
   Upload, 
   FileText, 
@@ -38,6 +38,7 @@ import {
 interface DocumentUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialFiles?: File[];
   onPaperIndexed: (paper: VitalSignPaper) => void;
   onBatchIndexed?: (papers: VitalSignPaper[]) => void;
 }
@@ -222,6 +223,7 @@ const PRESET_DEMO_PAPERS: { label: string; modality: VitalModality; paper: Parti
 export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
   isOpen,
   onClose,
+  initialFiles,
   onPaperIndexed,
   onBatchIndexed,
 }) => {
@@ -239,8 +241,18 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
   const [isReviewStep, setIsReviewStep] = useState(false);
   const [draftPaper, setDraftPaper] = useState<VitalSignPaper | null>(null);
   const [batchDrafts, setBatchDrafts] = useState<VitalSignPaper[]>([]);
+  const [selectedDraftIndex, setSelectedDraftIndex] = useState<number>(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const additionalFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Pre-load any initial files passed from caller
+  useEffect(() => {
+    if (isOpen && initialFiles && initialFiles.length > 0) {
+      setSelectedFiles(initialFiles);
+      setAnalysisError(null);
+    }
+  }, [isOpen, initialFiles]);
 
   if (!isOpen) return null;
 
@@ -257,11 +269,67 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
     });
   }, [pastedText, selectedFiles]);
 
-  // Handle single or multiple file selection
+  // Handle initial single or multiple file selection
   const handleFilesSelected = (files: FileList | File[]) => {
     const fileArray = Array.from(files);
     setSelectedFiles(fileArray);
     setAnalysisError(null);
+  };
+
+  // Add more files to existing batch without overwriting
+  const handleAddMoreFiles = (files: FileList | File[]) => {
+    const fileArray = Array.from(files);
+    setSelectedFiles((prev) => {
+      const existingKeys = new Set(prev.map((f) => `${f.name}_${f.size}`));
+      const freshFiles = fileArray.filter((f) => !existingKeys.has(`${f.name}_${f.size}`));
+      return [...prev, ...freshFiles];
+    });
+    setAnalysisError(null);
+  };
+
+  // Remove a specific file from the pending batch
+  const handleRemoveFile = (indexToRemove: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== indexToRemove));
+  };
+
+  // Clear all selected files
+  const handleClearSelectedFiles = () => {
+    setSelectedFiles([]);
+  };
+
+  // Synchronize edits made in review panel back to both draftPaper and batchDrafts array
+  const setDraftPaperAndSync = (updated: VitalSignPaper) => {
+    setDraftPaper(updated);
+    setBatchDrafts((prev) => {
+      const copy = [...prev];
+      if (copy[selectedDraftIndex]) {
+        copy[selectedDraftIndex] = updated;
+      }
+      return copy;
+    });
+  };
+
+  // Switch which paper in the batch is being inspected/edited
+  const handleSelectDraftIndex = (index: number) => {
+    setSelectedDraftIndex(index);
+    if (batchDrafts[index]) {
+      setDraftPaper(batchDrafts[index]);
+    }
+  };
+
+  // Exclude a specific paper from the parsed batch
+  const handleRemoveBatchDraft = (indexToRemove: number) => {
+    const next = batchDrafts.filter((_, i) => i !== indexToRemove);
+    setBatchDrafts(next);
+    if (next.length === 0) {
+      setIsReviewStep(false);
+      setDraftPaper(null);
+      setSelectedDraftIndex(0);
+    } else {
+      const nextIndex = Math.min(selectedDraftIndex, next.length - 1);
+      setSelectedDraftIndex(nextIndex);
+      setDraftPaper(next[nextIndex]);
+    }
   };
 
   // Run AI / Heuristic analysis on single or bulk papers
@@ -325,6 +393,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
 
         const parsedPapers: VitalSignPaper[] = data.papers;
         setBatchDrafts(parsedPapers);
+        setSelectedDraftIndex(0);
         if (parsedPapers.length > 0) {
           setDraftPaper(parsedPapers[0]);
         }
@@ -376,6 +445,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
         const newPaper: VitalSignPaper = data.paper;
         setDraftPaper(newPaper);
         setBatchDrafts([newPaper]);
+        setSelectedDraftIndex(0);
         setIsReviewStep(true);
       }
     } catch (err: unknown) {
@@ -426,11 +496,14 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
         groundTruth: p.groundTruth || p.theoreticalFramework || '',
         clinicalSignificance: p.clinicalSignificance || p.methodology || '',
       };
-      onPaperIndexed(p);
     });
 
     if (onBatchIndexed) {
       onBatchIndexed(enrichedClusterPapers);
+    } else {
+      enrichedClusterPapers.forEach(p => {
+        onPaperIndexed(p);
+      });
     }
 
     onClose();
@@ -441,34 +514,31 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
     const enriched = enrichPaperWithCategory(paper);
     setDraftPaper(enriched);
     setBatchDrafts([enriched]);
+    setSelectedDraftIndex(0);
     setIsReviewStep(true);
   };
 
   // Final Commit & Index into RAG Corpus
   const handleConfirmAndIndex = () => {
-    if (batchDrafts.length > 0) {
-      const enrichedBatch = batchDrafts.map(enrichPaperWithCategory);
+    const papersToIndex = batchDrafts.length > 0 ? batchDrafts : draftPaper ? [draftPaper] : [];
+    if (papersToIndex.length === 0) return;
+
+    const enrichedBatch = papersToIndex.map(enrichPaperWithCategory);
+    enrichedBatch.forEach(p => {
+      PAPER_EXTENDED_DETAILS[p.id] = {
+        problemStatement: p.coreThesis || p.problemStatement || '',
+        deviceUsed: p.deviceUsed || p.primaryCorpus || '',
+        groundTruth: p.groundTruth || p.theoreticalFramework || '',
+        clinicalSignificance: p.clinicalSignificance || p.methodology || '',
+      };
+    });
+
+    if (onBatchIndexed && enrichedBatch.length > 0) {
+      onBatchIndexed(enrichedBatch);
+    } else {
       enrichedBatch.forEach(p => {
-        PAPER_EXTENDED_DETAILS[p.id] = {
-          problemStatement: p.coreThesis || p.problemStatement || '',
-          deviceUsed: p.deviceUsed || p.primaryCorpus || '',
-          groundTruth: p.groundTruth || p.theoreticalFramework || '',
-          clinicalSignificance: p.clinicalSignificance || p.methodology || '',
-        };
         onPaperIndexed(p);
       });
-      if (onBatchIndexed) {
-        onBatchIndexed(enrichedBatch);
-      }
-    } else if (draftPaper) {
-      const enriched = enrichPaperWithCategory(draftPaper);
-      PAPER_EXTENDED_DETAILS[enriched.id] = {
-        problemStatement: enriched.coreThesis || enriched.problemStatement || '',
-        deviceUsed: enriched.deviceUsed || enriched.primaryCorpus || '',
-        groundTruth: enriched.groundTruth || enriched.theoreticalFramework || '',
-        clinicalSignificance: enriched.clinicalSignificance || enriched.methodology || '',
-      };
-      onPaperIndexed(enriched);
     }
     onClose();
   };
@@ -642,15 +712,19 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                       e.preventDefault();
                       setIsDragging(false);
                       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                        handleFilesSelected(e.dataTransfer.files);
+                        if (selectedFiles.length > 0) {
+                          handleAddMoreFiles(e.dataTransfer.files);
+                        } else {
+                          handleFilesSelected(e.dataTransfer.files);
+                        }
                       }
                     }}
                     onClick={() => fileInputRef.current?.click()}
-                    className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${
+                    className={`border-2 border-dashed rounded-2xl p-7 text-center cursor-pointer transition-all ${
                       isDragging
                         ? 'border-teal-500 bg-teal-50/50 scale-[0.99]'
                         : selectedFiles.length > 0
-                        ? 'border-teal-400 bg-teal-50/30'
+                        ? 'border-teal-400 bg-teal-50/20'
                         : 'border-slate-300 hover:border-teal-400 hover:bg-slate-50'
                     }`}
                   >
@@ -661,14 +735,34 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                       accept=".pdf,.txt,.md,.json,.csv"
                       onChange={(e) => {
                         if (e.target.files && e.target.files.length > 0) {
-                          handleFilesSelected(e.target.files);
+                          if (selectedFiles.length > 0) {
+                            handleAddMoreFiles(e.target.files);
+                          } else {
+                            handleFilesSelected(e.target.files);
+                          }
+                          e.target.value = '';
+                        }
+                      }}
+                      className="hidden"
+                    />
+
+                    {/* Secondary hidden input specifically for appending more papers */}
+                    <input
+                      ref={additionalFileInputRef}
+                      type="file"
+                      multiple
+                      accept=".pdf,.txt,.md,.json,.csv"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                          handleAddMoreFiles(e.target.files);
+                          e.target.value = '';
                         }
                       }}
                       className="hidden"
                     />
 
                     <div className="flex flex-col items-center justify-center space-y-2">
-                      <div className="w-12 h-12 rounded-2xl bg-teal-100 flex items-center justify-center text-teal-700">
+                      <div className="w-12 h-12 rounded-2xl bg-teal-100 flex items-center justify-center text-teal-700 shadow-2xs">
                         {selectedFiles.length > 0 ? (
                           <FileCheck className="w-6 h-6 text-teal-600" />
                         ) : (
@@ -681,36 +775,101 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                           <p className="text-sm font-bold text-slate-900">
                             {selectedFiles.length === 1
                               ? selectedFiles[0].name
-                              : `${selectedFiles.length} papers selected for bulk ingestion`}
+                              : `${selectedFiles.length} papers staged for ingestion`}
                           </p>
                           <p className="text-2xs text-slate-500">
-                            Total size: {(selectedFiles.reduce((s, f) => s + f.size, 0) / 1024).toFixed(1)} KB • Target: {currentDomainConfig.name}
+                            Total size: {(selectedFiles.reduce((s, f) => s + f.size, 0) / 1024).toFixed(1)} KB &bull; Target: {currentDomainConfig.name}
+                          </p>
+                          <p className="text-3xs text-teal-600 font-semibold mt-1">
+                            Click to add more papers or use the &ldquo;+ Add More Papers&rdquo; button below
                           </p>
                         </div>
                       ) : (
                         <div>
                           <p className="text-sm font-bold text-slate-900">
-                            Click to browse or drag & drop research paper(s)
+                            Click to browse or drag &amp; drop research paper(s)
                           </p>
                           <p className="text-2xs text-slate-500 mt-0.5">
-                            Supports bulk multi-file upload (.pdf, .txt, .md, .json)
+                            Supports multiple papers at once (.pdf, .txt, .md, .json)
                           </p>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {selectedFiles.length > 1 && (
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5 max-h-36 overflow-y-auto">
-                      <span className="text-2xs font-bold text-slate-500 uppercase tracking-wider">
-                        Files in Batch ({selectedFiles.length}):
-                      </span>
-                      {selectedFiles.map((file, idx) => (
-                        <div key={idx} className="flex items-center justify-between text-xs py-1 px-2 bg-white rounded border border-slate-200">
-                          <span className="font-medium text-slate-700 truncate max-w-xs">{file.name}</span>
-                          <span className="text-2xs text-slate-400">{(file.size / 1024).toFixed(1)} KB</span>
+                  {/* Multi-Paper Selection Queue & File List */}
+                  {selectedFiles.length > 0 && (
+                    <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-2xs font-bold text-slate-700 uppercase tracking-wider">
+                            Upload Queue ({selectedFiles.length} {selectedFiles.length === 1 ? 'Paper' : 'Papers'})
+                          </span>
+                          {selectedFiles.length > 1 && (
+                            <span className="px-2 py-0.5 rounded-full text-3xs font-black bg-teal-100 text-teal-800 border border-teal-200">
+                              Batch Mode
+                            </span>
+                          )}
                         </div>
-                      ))}
+                        <div className="flex items-center space-x-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              additionalFileInputRef.current?.click();
+                            }}
+                            className="inline-flex items-center space-x-1 px-2.5 py-1 bg-teal-50 hover:bg-teal-100 text-teal-700 rounded-lg text-2xs font-bold border border-teal-200 transition-colors cursor-pointer"
+                          >
+                            <Plus className="w-3 h-3" />
+                            <span>Add More Papers</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleClearSelectedFiles();
+                            }}
+                            className="text-2xs text-slate-400 hover:text-rose-600 font-medium transition-colors cursor-pointer px-1.5 py-0.5"
+                          >
+                            Clear All
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
+                        {selectedFiles.map((file, idx) => (
+                          <div 
+                            key={`${file.name}_${idx}`} 
+                            className="flex items-center justify-between text-xs py-1.5 px-2.5 bg-white rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
+                          >
+                            <div className="flex items-center space-x-2 min-w-0 flex-1 pr-2">
+                              <span className="w-5 h-5 rounded bg-slate-100 text-slate-600 text-3xs font-black flex items-center justify-center shrink-0">
+                                {idx + 1}
+                              </span>
+                              <FileText className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                              <span className="font-medium text-slate-800 truncate text-2xs">{file.name}</span>
+                            </div>
+                            <div className="flex items-center space-x-3 shrink-0">
+                              <span className="text-3xs text-slate-400">
+                                {file.size > 1024 * 1024 
+                                  ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
+                                  : `${(file.size / 1024).toFixed(1)} KB`}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveFile(idx);
+                                }}
+                                title="Remove paper from upload list"
+                                className="p-1 text-slate-400 hover:text-rose-600 rounded transition-colors cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
 
@@ -727,19 +886,19 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                           </span>
                         </div>
                         <p className="text-2xs text-slate-600">
-                          🛡️ Enterprise Domain Segregation: Paper will be indexed strictly into the <strong>{liveClassification.categoryName}</strong> partition to guarantee cross-domain comparison isolation.
+                          🛡️ Enterprise Domain Segregation: Paper(s) will be indexed strictly into the <strong>{liveClassification.categoryName}</strong> partition to guarantee cross-domain comparison isolation.
                         </p>
                       </div>
                     </div>
                   )}
 
                   {selectedFiles.length > 0 && (
-                    <div className="flex justify-end">
+                    <div className="flex justify-end pt-1">
                       <button
                         type="button"
                         disabled={isAnalyzing}
                         onClick={() => handleAnalyzeDocument()}
-                        className="inline-flex items-center space-x-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-xs disabled:opacity-50 transition-colors"
+                        className="inline-flex items-center space-x-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-xs disabled:opacity-50 transition-colors cursor-pointer"
                       >
                         {isAnalyzing ? (
                           <RefreshCw className="w-4 h-4 animate-spin" />
@@ -750,7 +909,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                           {isAnalyzing 
                             ? 'Processing Ingestion...' 
                             : selectedFiles.length > 1 
-                            ? `Analyze Batch (${selectedFiles.length} Papers)` 
+                            ? `Analyze & Ingest Batch (${selectedFiles.length} Papers)` 
                             : 'Analyze & Extract Academic Structure'}
                         </span>
                       </button>
@@ -901,18 +1060,72 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                     <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                     <span className="text-xs font-bold text-slate-900">
                       {batchDrafts.length > 1
-                        ? `Batch Structured (${batchDrafts.length} Papers) — Inspecting 1 of ${batchDrafts.length}`
+                        ? `Batch Ingestion (${batchDrafts.length} Papers) — Inspecting Paper ${selectedDraftIndex + 1} of ${batchDrafts.length}`
                         : 'Document Structured & Ready for Indexing'}
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setIsReviewStep(false)}
-                    className="text-2xs text-slate-500 hover:text-slate-800 underline"
+                    className="text-2xs text-slate-500 hover:text-slate-800 underline cursor-pointer"
                   >
                     Back to Upload
                   </button>
                 </div>
+
+                {/* Batch Paper Switcher Tabs */}
+                {batchDrafts.length > 1 && (
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xs font-bold text-slate-600 uppercase tracking-wider">
+                        Batch Papers ({batchDrafts.length}) — Click to Review &amp; Edit Any Paper:
+                      </span>
+                      <span className="text-3xs text-teal-700 font-bold bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">
+                        All {batchDrafts.length} will be indexed
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2 overflow-x-auto pb-1">
+                      {batchDrafts.map((paper, idx) => {
+                        const isCurrent = selectedDraftIndex === idx;
+                        return (
+                          <div
+                            key={paper.id || idx}
+                            onClick={() => handleSelectDraftIndex(idx)}
+                            className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs cursor-pointer shrink-0 border transition-all ${
+                              isCurrent
+                                ? 'bg-teal-700 text-white border-teal-700 font-bold shadow-xs'
+                                : 'bg-white text-slate-700 border-slate-200 hover:border-teal-400'
+                            }`}
+                          >
+                            <span className={`w-4 h-4 rounded-full flex items-center justify-center text-3xs font-black ${
+                              isCurrent ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                            }`}>
+                              {idx + 1}
+                            </span>
+                            <span className="max-w-[140px] truncate text-2xs">
+                              {paper.title || `Paper ${idx + 1}`}
+                            </span>
+                            {batchDrafts.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveBatchDraft(idx);
+                                }}
+                                title="Remove this paper from batch"
+                                className={`p-0.5 rounded hover:bg-black/20 ${
+                                  isCurrent ? 'text-teal-100 hover:text-white' : 'text-slate-400 hover:text-rose-500'
+                                }`}
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Enterprise Category Auto-Detection & Domain Segregation Guard */}
                 <div className="p-3.5 bg-gradient-to-r from-teal-50/90 to-indigo-50/90 border border-teal-200/90 rounded-xl space-y-2">
@@ -941,7 +1154,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                       onChange={(e) => {
                         const cat = ACADEMIC_CATEGORIES.find((c) => c.id === e.target.value);
                         if (cat) {
-                          setDraftPaper({
+                          setDraftPaperAndSync({
                             ...draftPaper,
                             category: cat.name,
                             domainId: cat.id,
@@ -975,7 +1188,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                     <input
                       type="text"
                       value={draftPaper.title}
-                      onChange={(e) => setDraftPaper({ ...draftPaper, title: e.target.value })}
+                      onChange={(e) => setDraftPaperAndSync({ ...draftPaper, title: e.target.value })}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-slate-900"
                     />
                   </div>
@@ -987,7 +1200,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                     <input
                       type="text"
                       value={draftPaper.authors}
-                      onChange={(e) => setDraftPaper({ ...draftPaper, authors: e.target.value })}
+                      onChange={(e) => setDraftPaperAndSync({ ...draftPaper, authors: e.target.value })}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800"
                     />
                   </div>
@@ -999,7 +1212,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                     <input
                       type="text"
                       value={draftPaper.venue}
-                      onChange={(e) => setDraftPaper({ ...draftPaper, venue: e.target.value })}
+                      onChange={(e) => setDraftPaperAndSync({ ...draftPaper, venue: e.target.value })}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800"
                     />
                   </div>
@@ -1011,7 +1224,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                     <input
                       type="number"
                       value={draftPaper.year}
-                      onChange={(e) => setDraftPaper({ ...draftPaper, year: Number(e.target.value) || 2024 })}
+                      onChange={(e) => setDraftPaperAndSync({ ...draftPaper, year: Number(e.target.value) || 2024 })}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800"
                     />
                   </div>
@@ -1027,7 +1240,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                     <textarea
                       rows={2}
                       value={draftPaper.coreThesis || draftPaper.problemStatement || ''}
-                      onChange={(e) => setDraftPaper({ 
+                      onChange={(e) => setDraftPaperAndSync({ 
                         ...draftPaper, 
                         coreThesis: e.target.value,
                         problemStatement: e.target.value 
@@ -1045,7 +1258,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                       <textarea
                         rows={2}
                         value={draftPaper.primaryCorpus || draftPaper.deviceUsed || ''}
-                        onChange={(e) => setDraftPaper({ 
+                        onChange={(e) => setDraftPaperAndSync({ 
                           ...draftPaper, 
                           primaryCorpus: e.target.value,
                           deviceUsed: e.target.value 
@@ -1061,7 +1274,7 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
                       <textarea
                         rows={2}
                         value={draftPaper.theoreticalFramework || draftPaper.groundTruth || ''}
-                        onChange={(e) => setDraftPaper({ 
+                        onChange={(e) => setDraftPaperAndSync({ 
                           ...draftPaper, 
                           theoreticalFramework: e.target.value,
                           groundTruth: e.target.value 

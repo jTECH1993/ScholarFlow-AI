@@ -23,6 +23,7 @@ import { VitalSignPaper } from '../types';
 interface UploadManagePageProps {
   papers: VitalSignPaper[];
   onOpenUploadModal: () => void;
+  onOpenUploadModalWithFiles?: (files: File[]) => void;
   onLoadSampleCorpus: () => void;
   onDeletePaper: (paperId: string) => void;
   onClearAllPapers: () => void;
@@ -32,6 +33,7 @@ interface UploadManagePageProps {
 export const UploadManagePage: React.FC<UploadManagePageProps> = ({
   papers,
   onOpenUploadModal,
+  onOpenUploadModalWithFiles,
   onLoadSampleCorpus,
   onDeletePaper,
   onClearAllPapers,
@@ -70,7 +72,28 @@ export const UploadManagePage: React.FC<UploadManagePageProps> = ({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    onOpenUploadModal();
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const files = Array.from(e.dataTransfer.files);
+      if (onOpenUploadModalWithFiles) {
+        onOpenUploadModalWithFiles(files);
+      } else {
+        onOpenUploadModal();
+      }
+    } else {
+      onOpenUploadModal();
+    }
+  };
+
+  const handleNativeFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files);
+      if (onOpenUploadModalWithFiles) {
+        onOpenUploadModalWithFiles(files);
+      } else {
+        onOpenUploadModal();
+      }
+      e.target.value = '';
+    }
   };
 
   return (
@@ -138,13 +161,23 @@ export const UploadManagePage: React.FC<UploadManagePageProps> = ({
               </p>
             </div>
 
-            <div className="flex items-center space-x-3 pt-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept=".pdf,.txt,.md,.json,.csv"
+              onChange={handleNativeFileInput}
+              className="hidden"
+            />
+
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               <button
                 type="button"
-                onClick={onOpenUploadModal}
-                className="px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors shadow-2xs cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors shadow-2xs cursor-pointer flex items-center space-x-1.5"
               >
-                Browse Files
+                <UploadCloud className="w-4 h-4" />
+                <span>Upload Papers (Single or Batch)</span>
               </button>
               <button
                 type="button"
@@ -156,7 +189,7 @@ export const UploadManagePage: React.FC<UploadManagePageProps> = ({
             </div>
             
             <div className="text-3xs text-slate-400 dark:text-slate-500 pt-1">
-              Supports PDF, DOCX, TXT, MD, LaTeX &bull; Max 50 MB per file
+              Supports selecting 1 or multiple files &bull; PDF, DOCX, TXT, MD, LaTeX &bull; Max 60 MB batch
             </div>
           </div>
 

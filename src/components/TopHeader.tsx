@@ -65,8 +65,6 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
   const isAdmin = currentUser?.role === 'Administrator' || 
-                  currentUser?.email === 'talha93uet@gmail.com' || 
-                  currentUser?.email === 'mtalhajahangir@mnsuet.edu.pk' ||
                   localStorage.getItem('scholarflow_admin_auth') === 'true';
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
