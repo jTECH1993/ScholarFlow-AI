@@ -1331,6 +1331,7 @@ export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
         allSessionsList={allSessions}
         activeDomain={selectedDomain}
         onSelectSession={handleSelectSession}
+        onCreateNewSession={handleCreateNewSession}
       />
 
       {/* STEP-BY-STEP REAL-TIME EXECUTION LOG PANEL */}
