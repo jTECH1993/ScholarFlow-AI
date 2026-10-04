@@ -369,3 +369,19 @@ export interface AgentPerformanceMetrics {
   modelUsed?: string;
 }
 
+export interface ExecutionLogEntry {
+  id: string;
+  timestamp: string;
+  stepNumber: number;
+  totalSteps: number;
+  agentId: AgentId;
+  agentName: string;
+  role: string;
+  avatar: string;
+  status: 'QUEUED' | 'RUNNING' | 'SUCCESS' | 'FAILED';
+  modelUsed?: string;
+  executionTimeMs?: number;
+  message: string;
+  summary?: string;
+}
+
