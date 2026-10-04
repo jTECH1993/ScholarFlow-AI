@@ -89,6 +89,125 @@ Write a publication-ready literature review or systematic analysis incorporating
 Audit the generated manuscript. Check every citation against the raw evidence, evaluate logical consistency, assess hallucination risk, and generate a final peer review scorecard.`,
     enabled: true,
   },
+  'math-signal-specialist': {
+    id: 'math-signal-specialist',
+    name: 'Signal & Math Formulation Specialist',
+    role: 'Complex Waveform & Matrix Processing',
+    avatar: '🔬',
+    color: 'teal',
+    description: 'Dynamically spawned to handle complex Doppler phase shift equations, DSP matrices, and multi-sensor wave propagation formulas.',
+    provider: 'gemini',
+    ollamaModel: 'deepseek-r1:7b',
+    ollamaEndpoint: 'http://localhost:11434',
+    geminiModel: 'gemini-2.5-flash',
+    temperature: 0.1,
+    systemPrompt: `You are the dynamically spawned Signal & Math Formulation Specialist Agent.
+Analyze mathematical equations, wave propagation matrices, micro-Doppler spectrograms, and DSP signal processing derivations extracted from the corpus chunks. Provide formal mathematical rigor.`,
+    enabled: true,
+  },
+  'clinical-trial-specialist': {
+    id: 'clinical-trial-specialist',
+    name: 'Clinical Trial & Cohort Auditor',
+    role: 'Regulatory Compliance & Sample Rigor',
+    avatar: '📊',
+    color: 'emerald',
+    description: 'Dynamically spawned to evaluate complex clinical trial cohorts, FDA/CE compliance bounds, and statistical error metrics (MAE/RMSE).',
+    provider: 'gemini',
+    ollamaModel: 'mistral:7b',
+    ollamaEndpoint: 'http://localhost:11434',
+    geminiModel: 'gemini-2.5-flash',
+    temperature: 0.15,
+    systemPrompt: `You are the dynamically spawned Clinical Trial & Cohort Auditor Agent.
+Audit clinical trial cohort sizes, subject demographics, ground truth gold standards (ECG vs Holter vs spirometry), statistical confidence intervals, and FDA regulatory compliance bounds.`,
+    enabled: true,
+  },
+  'edge-case-specialist': {
+    id: 'edge-case-specialist',
+    name: 'Adversarial Edge-Case Auditor',
+    role: 'Vulnerability & Motion Artifact Stress-Tester',
+    avatar: '🛡️',
+    color: 'rose',
+    description: 'Dynamically spawned to stress-test high-variance conflicting claims, ambulatory motion artifacts, and Fitzpatrick skin phototype biases.',
+    provider: 'gemini',
+    ollamaModel: 'gemma2:9b',
+    ollamaEndpoint: 'http://localhost:11434',
+    geminiModel: 'gemini-2.5-flash',
+    temperature: 0.2,
+    systemPrompt: `You are the dynamically spawned Adversarial Edge-Case Auditor Agent.
+Identify edge cases, ambulatory motion artifact vulnerabilities, environmental interference, and demographic biases across the retrieved literature. Stress-test the core research claims.`,
+    enabled: true,
+  },
+};
+
+export const evaluateDocumentComplexityAndSpawnSubAgents = (
+  chunks: string[], 
+  userQuery: string
+) => {
+  const spawned: import('../types').SpawnedSubAgent[] = [];
+  const textSample = (userQuery + ' ' + chunks.join(' ')).toLowerCase();
+
+  // 1. Math & Signal Processing Complexity Trigger
+  if (
+    textSample.includes('radar') || 
+    textSample.includes('fmcw') || 
+    textSample.includes('fourier') || 
+    textSample.includes('spectrogram') || 
+    textSample.includes('equation') || 
+    textSample.includes('matrix') || 
+    textSample.includes('phase shift')
+  ) {
+    spawned.push({
+      id: 'math-signal-specialist',
+      name: 'Signal & Math Formulation Specialist',
+      role: 'Complex Waveform & Matrix Processing',
+      avatar: '🔬',
+      reasonForSpawning: 'Detected complex FMCW micro-Doppler radar phase shifts and mathematical signal equations in retrieved corpus chunks.',
+      complexityTrigger: 'Mathematical & Signal Processing Equations',
+      spawnedAtStep: 2,
+    });
+  }
+
+  // 2. Clinical Trial & Cohort Demographics Complexity Trigger
+  if (
+    textSample.includes('clinical') || 
+    textSample.includes('cohort') || 
+    textSample.includes('fda') || 
+    textSample.includes('patient') || 
+    textSample.includes('icu') || 
+    textSample.includes('rmse') || 
+    textSample.includes('mae')
+  ) {
+    spawned.push({
+      id: 'clinical-trial-specialist',
+      name: 'Clinical Trial & Cohort Auditor',
+      role: 'Regulatory Compliance & Sample Rigor',
+      avatar: '📊',
+      reasonForSpawning: 'Detected multi-center clinical cohort demographics, FDA/CE compliance requirements, and error metrics.',
+      complexityTrigger: 'Complex Clinical Trial Demographics & Regulatory Tables',
+      spawnedAtStep: 3,
+    });
+  }
+
+  // 3. High-Variance Conflicting Claims Complexity Trigger
+  if (
+    textSample.includes('hypothesis') || 
+    textSample.includes('dispute') || 
+    textSample.includes('conflict') || 
+    textSample.includes('motion artifact') || 
+    textSample.includes('phototype')
+  ) {
+    spawned.push({
+      id: 'edge-case-specialist',
+      name: 'Adversarial Edge-Case Auditor',
+      role: 'Vulnerability & Motion Artifact Stress-Tester',
+      avatar: '🛡️',
+      reasonForSpawning: 'Detected high-variance conflicting claims, motion artifact vulnerabilities, or Fitzpatrick skin phototype biases.',
+      complexityTrigger: 'High-Variance Conflicting Claims & Edge Cases',
+      spawnedAtStep: 4,
+    });
+  }
+
+  return spawned;
 };
 
 export interface TaskDefinition {

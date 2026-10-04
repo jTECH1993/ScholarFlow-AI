@@ -691,6 +691,7 @@ export const App: React.FC = () => {
                   papers={filteredPapers}
                   activeDomain={activeDomain}
                   onOpenUploadModal={() => setIsUploadModalOpen(true)}
+                  sessionId={sessionId}
                 />
               )}
 

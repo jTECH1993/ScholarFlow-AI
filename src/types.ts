@@ -289,7 +289,31 @@ export type AgentId =
   | 'methodology-auditor'
   | 'consensus-analyst'
   | 'synthesis-author'
-  | 'peer-reviewer';
+  | 'peer-reviewer'
+  | 'math-signal-specialist'
+  | 'clinical-trial-specialist'
+  | 'edge-case-specialist';
+
+export interface SpawnedSubAgent {
+  id: AgentId;
+  name: string;
+  role: string;
+  avatar: string;
+  reasonForSpawning: string;
+  complexityTrigger: 'Mathematical & Signal Processing Equations' | 'Complex Clinical Trial Demographics & Regulatory Tables' | 'High-Variance Conflicting Claims & Edge Cases';
+  spawnedAtStep: number;
+}
+
+export interface SessionLongTermMemory {
+  sessionId: string;
+  createdAt: string;
+  updatedAt: string;
+  queryCount: number;
+  extractedEntitiesCount: number;
+  spawnedSubAgentsHistory: SpawnedSubAgent[];
+  learnedDomainPreferences: string[];
+  sessionSynthesisHistory: { query: string; synthesisSnippet: string; qualityScore: number; timestamp: string }[];
+}
 
 export interface AgentConfig {
   id: AgentId;

@@ -40,6 +40,9 @@ const INITIAL_PAST_SESSIONS: PastSessionRecord[] = [
       'consensus-analyst': { latencyMs: 1280, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
       'synthesis-author': { latencyMs: 1720, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
       'peer-reviewer': { latencyMs: 1050, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
+      'math-signal-specialist': { latencyMs: 920, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
+      'clinical-trial-specialist': { latencyMs: 1100, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
+      'edge-case-specialist': { latencyMs: 1010, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
     },
   },
   {
@@ -53,6 +56,9 @@ const INITIAL_PAST_SESSIONS: PastSessionRecord[] = [
       'consensus-analyst': { latencyMs: 1310, status: 'SUCCESS', modelUsed: 'Ollama (llama3.2)' },
       'synthesis-author': { latencyMs: 1890, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
       'peer-reviewer': { latencyMs: 1120, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
+      'math-signal-specialist': { latencyMs: 950, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
+      'clinical-trial-specialist': { latencyMs: 1180, status: 'SUCCESS', modelUsed: 'Ollama (llama3.2)' },
+      'edge-case-specialist': { latencyMs: 1050, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
     },
   },
   {
@@ -66,6 +72,9 @@ const INITIAL_PAST_SESSIONS: PastSessionRecord[] = [
       'consensus-analyst': { latencyMs: 1400, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
       'synthesis-author': { latencyMs: 1680, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
       'peer-reviewer': { latencyMs: 1180, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
+      'math-signal-specialist': { latencyMs: 890, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
+      'clinical-trial-specialist': { latencyMs: 1040, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
+      'edge-case-specialist': { latencyMs: 980, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
     },
   },
   {
@@ -79,6 +88,9 @@ const INITIAL_PAST_SESSIONS: PastSessionRecord[] = [
       'consensus-analyst': { latencyMs: 1250, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
       'synthesis-author': { latencyMs: 1950, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
       'peer-reviewer': { latencyMs: 990, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
+      'math-signal-specialist': { latencyMs: 820, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
+      'clinical-trial-specialist': { latencyMs: 1150, status: 'SUCCESS', modelUsed: 'Ollama (mistral)' },
+      'edge-case-specialist': { latencyMs: 1020, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
     },
   },
   {
@@ -92,6 +104,9 @@ const INITIAL_PAST_SESSIONS: PastSessionRecord[] = [
       'consensus-analyst': { latencyMs: 1510, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
       'synthesis-author': { latencyMs: 2100, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
       'peer-reviewer': { latencyMs: 1250, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
+      'math-signal-specialist': { latencyMs: 910, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
+      'clinical-trial-specialist': { latencyMs: 1220, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
+      'edge-case-specialist': { latencyMs: 1110, status: 'SUCCESS', modelUsed: 'Gemini 2.5 Flash' },
     },
   },
   {
@@ -105,6 +120,9 @@ const INITIAL_PAST_SESSIONS: PastSessionRecord[] = [
       'consensus-analyst': { latencyMs: 1650, status: 'SUCCESS', modelUsed: 'Ollama (llama3.2)' },
       'synthesis-author': { latencyMs: 2350, status: 'SUCCESS', modelUsed: 'Ollama (llama3.2)' },
       'peer-reviewer': { latencyMs: 1410, status: 'SUCCESS', modelUsed: 'Ollama (llama3.2)' },
+      'math-signal-specialist': { latencyMs: 1100, status: 'SUCCESS', modelUsed: 'Ollama (llama3.2)' },
+      'clinical-trial-specialist': { latencyMs: 1350, status: 'SUCCESS', modelUsed: 'Ollama (llama3.2)' },
+      'edge-case-specialist': { latencyMs: 1280, status: 'SUCCESS', modelUsed: 'Ollama (llama3.2)' },
     },
   },
 ];

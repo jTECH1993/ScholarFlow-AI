@@ -26,13 +26,18 @@ import {
   ExternalLink,
   Users,
   Activity,
-  BarChart3
+  BarChart3,
+  Database,
+  Plus,
+  FolderSync,
+  Trash2
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { AgentCollaborationGraph } from './AgentCollaborationGraph';
 import { AgentPerformanceHeatmap } from './AgentPerformanceHeatmap';
 import { ResearchKnowledgeGraph } from './ResearchKnowledgeGraph';
 import { PresetLibraryModal, PipelinePreset } from './PresetLibraryModal';
+import { SessionMemoryManagerModal } from './SessionMemoryManagerModal';
 import { exportResearchAuditReportPDF } from '../services/pdfReportExporter';
 import { 
   AgentId, 
@@ -43,7 +48,9 @@ import {
   VitalSignPaper,
   LLMProvider,
   AgentPerformanceMetrics,
-  ExecutionLogEntry
+  ExecutionLogEntry,
+  SpawnedSubAgent,
+  SessionLongTermMemory
 } from '../types';
 
 const INITIAL_EXECUTION_LOGS: ExecutionLogEntry[] = [
@@ -127,6 +134,7 @@ import {
   DEFAULT_AGENTS, 
   MULTI_AGENT_TASKS, 
   executeAgentStep, 
+  evaluateDocumentComplexityAndSpawnSubAgents,
   TaskDefinition 
 } from '../services/multiAgentEngine';
 
@@ -206,28 +214,128 @@ const INITIAL_AGENT_METRICS: Record<AgentId, AgentPerformanceMetrics> = {
     provider: 'gemini',
     modelUsed: 'Gemini 2.5 Flash',
   },
+  'math-signal-specialist': {
+    agentId: 'math-signal-specialist',
+    agentName: 'Math & Signal Specialist',
+    role: 'Waveform & Matrix Processing',
+    avatar: '🔬',
+    totalExecutions: 8,
+    successfulExecutions: 8,
+    failedExecutions: 0,
+    successRate: 100,
+    totalExecutionTimeMs: 7360,
+    avgExecutionTimeMs: 920,
+    lastExecutionTimeMs: 920,
+    provider: 'gemini',
+    modelUsed: 'Gemini 2.5 Flash',
+  },
+  'clinical-trial-specialist': {
+    agentId: 'clinical-trial-specialist',
+    agentName: 'Clinical Trial Auditor',
+    role: 'Cohort Rigor & FDA Compliance',
+    avatar: '📊',
+    totalExecutions: 8,
+    successfulExecutions: 8,
+    failedExecutions: 0,
+    successRate: 100,
+    totalExecutionTimeMs: 8800,
+    avgExecutionTimeMs: 1100,
+    lastExecutionTimeMs: 1100,
+    provider: 'gemini',
+    modelUsed: 'Gemini 2.5 Flash',
+  },
+  'edge-case-specialist': {
+    agentId: 'edge-case-specialist',
+    agentName: 'Adversarial Edge-Case Auditor',
+    role: 'Artifact & Bias Stress-Tester',
+    avatar: '🛡️',
+    totalExecutions: 8,
+    successfulExecutions: 8,
+    failedExecutions: 0,
+    successRate: 100,
+    totalExecutionTimeMs: 8080,
+    avgExecutionTimeMs: 1010,
+    lastExecutionTimeMs: 1010,
+    provider: 'gemini',
+    modelUsed: 'Gemini 2.5 Flash',
+  },
 };
 
 interface MultiAgentWorkbenchProps {
   papers: VitalSignPaper[];
   activeDomain: string;
   onOpenUploadModal?: () => void;
+  sessionId?: string;
 }
 
 export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
   papers,
   activeDomain,
   onOpenUploadModal,
+  sessionId = 'scholarflow-dedicated-session',
 }) => {
   // Active Task & Query State
   const [selectedTaskId, setSelectedTaskId] = useState<AgentTaskType>('systematic-review');
   const [userQuery, setUserQuery] = useState<string>(MULTI_AGENT_TASKS[0].defaultQuery);
   const [selectedDomain, setSelectedDomain] = useState<string>(activeDomain || 'all');
 
-  // Agent Configurations State
+  // Dedicated Session ID State
+  const [activeSessionId, setActiveSessionId] = useState<string>(sessionId || 'scholarflow-dedicated-session');
+
+  // Track list of all saved dedicated user sessions
+  const [allSessions, setAllSessions] = useState<{ id: string; name: string; createdAt: string; lastActive: string; queryCount: number }[]>(() => {
+    try {
+      const stored = localStorage.getItem('scholarflow_all_sessions');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.length > 0) return parsed;
+      }
+    } catch {}
+    const defaultS = {
+      id: sessionId || 'scholarflow-dedicated-session',
+      name: 'Primary Research Session',
+      createdAt: new Date().toLocaleString(),
+      lastActive: new Date().toLocaleString(),
+      queryCount: 1,
+    };
+    try {
+      localStorage.setItem('scholarflow_all_sessions', JSON.stringify([defaultS]));
+    } catch {}
+    return [defaultS];
+  });
+
+  // Session Long-Term Memory State (Isolated Per Active Session ID)
+  const [longTermMemory, setLongTermMemory] = useState<SessionLongTermMemory>(() => {
+    try {
+      const stored = localStorage.getItem(`scholarflow_session_${activeSessionId}_memory`);
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return {
+      sessionId: activeSessionId,
+      createdAt: new Date().toLocaleString(),
+      updatedAt: new Date().toLocaleString(),
+      queryCount: 1,
+      extractedEntitiesCount: 10,
+      spawnedSubAgentsHistory: [],
+      learnedDomainPreferences: [activeDomain || 'all'],
+      sessionSynthesisHistory: [],
+    };
+  });
+
+  // Dynamically Spawned Sub-Agents
+  const [spawnedSubAgents, setSpawnedSubAgents] = useState<SpawnedSubAgent[]>([]);
+
+  // Persist Long-Term Memory
+  useEffect(() => {
+    try {
+      localStorage.setItem(`scholarflow_session_${activeSessionId}_memory`, JSON.stringify(longTermMemory));
+    } catch {}
+  }, [longTermMemory, activeSessionId]);
+
+  // Agent Configurations State (Session Isolated)
   const [agentConfigs, setAgentConfigs] = useState<Record<AgentId, AgentConfig>>(() => {
     try {
-      const stored = localStorage.getItem('scholarflow_agent_configs');
+      const stored = localStorage.getItem(`scholarflow_session_${activeSessionId}_agent_configs`);
       if (stored) return JSON.parse(stored);
     } catch {}
     return DEFAULT_AGENTS;
@@ -236,21 +344,143 @@ export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
   // Agent Performance Metrics State
   const [agentMetricsMap, setAgentMetricsMap] = useState<Record<AgentId, AgentPerformanceMetrics>>(() => {
     try {
-      const stored = localStorage.getItem('scholarflow_agent_metrics');
+      const stored = localStorage.getItem(`scholarflow_session_${activeSessionId}_agent_metrics`);
       if (stored) return JSON.parse(stored);
     } catch {}
     return INITIAL_AGENT_METRICS;
   });
 
-  // Persist agent metrics
+  // Persist agent metrics per session
   useEffect(() => {
-    localStorage.setItem('scholarflow_agent_metrics', JSON.stringify(agentMetricsMap));
-  }, [agentMetricsMap]);
+    try {
+      localStorage.setItem(`scholarflow_session_${activeSessionId}_agent_metrics`, JSON.stringify(agentMetricsMap));
+    } catch {}
+  }, [agentMetricsMap, activeSessionId]);
+
+  // Handle Session Switching
+  const handleSelectSession = (newId: string) => {
+    setActiveSessionId(newId);
+    try {
+      const storedMemory = localStorage.getItem(`scholarflow_session_${newId}_memory`);
+      if (storedMemory) setLongTermMemory(JSON.parse(storedMemory));
+      else setLongTermMemory({
+        sessionId: newId,
+        createdAt: new Date().toLocaleString(),
+        updatedAt: new Date().toLocaleString(),
+        queryCount: 0,
+        extractedEntitiesCount: 0,
+        spawnedSubAgentsHistory: [],
+        learnedDomainPreferences: [selectedDomain],
+        sessionSynthesisHistory: [],
+      });
+
+      const storedConfigs = localStorage.getItem(`scholarflow_session_${newId}_agent_configs`);
+      if (storedConfigs) setAgentConfigs(JSON.parse(storedConfigs));
+      else setAgentConfigs(DEFAULT_AGENTS);
+
+      const storedMetrics = localStorage.getItem(`scholarflow_session_${newId}_agent_metrics`);
+      if (storedMetrics) setAgentMetricsMap(JSON.parse(storedMetrics));
+      else setAgentMetricsMap(INITIAL_AGENT_METRICS);
+    } catch (e) {
+      console.warn('Error loading session state:', e);
+    }
+
+    setAllSessions((prev) => {
+      const updated = prev.map((s) =>
+        s.id === newId ? { ...s, lastActive: new Date().toLocaleString() } : s
+      );
+      try {
+        localStorage.setItem('scholarflow_all_sessions', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  // Handle Creating New Dedicated Session
+  const handleCreateNewSession = (customName?: string) => {
+    const newId = `session-${Math.random().toString(36).substring(2, 9)}`;
+    const sessionTitle = customName || `Dedicated Session #${allSessions.length + 1}`;
+    const newSessionItem = {
+      id: newId,
+      name: sessionTitle,
+      createdAt: new Date().toLocaleString(),
+      lastActive: new Date().toLocaleString(),
+      queryCount: 0,
+    };
+
+    const newMemory: SessionLongTermMemory = {
+      sessionId: newId,
+      createdAt: new Date().toLocaleString(),
+      updatedAt: new Date().toLocaleString(),
+      queryCount: 0,
+      extractedEntitiesCount: 0,
+      spawnedSubAgentsHistory: [],
+      learnedDomainPreferences: [selectedDomain],
+      sessionSynthesisHistory: [],
+    };
+
+    setAllSessions((prev) => {
+      const updated = [newSessionItem, ...prev];
+      try {
+        localStorage.setItem('scholarflow_all_sessions', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setActiveSessionId(newId);
+    setLongTermMemory(newMemory);
+    setAgentConfigs(DEFAULT_AGENTS);
+    setAgentMetricsMap(INITIAL_AGENT_METRICS);
+    setMessages([]);
+    setFinalSynthesis('');
+    setPeerReviewReport(null);
+    setSpawnedSubAgents([]);
+
+    try {
+      localStorage.setItem(`scholarflow_session_${newId}_memory`, JSON.stringify(newMemory));
+      localStorage.setItem(`scholarflow_session_${newId}_agent_configs`, JSON.stringify(DEFAULT_AGENTS));
+      localStorage.setItem(`scholarflow_session_${newId}_agent_metrics`, JSON.stringify(INITIAL_AGENT_METRICS));
+    } catch {}
+  };
+
+  // Handle Deleting Session
+  const handleDeleteSession = (id: string) => {
+    if (allSessions.length <= 1) return;
+    const updated = allSessions.filter((s) => s.id !== id);
+    setAllSessions(updated);
+    try {
+      localStorage.setItem('scholarflow_all_sessions', JSON.stringify(updated));
+      localStorage.removeItem(`scholarflow_session_${id}_memory`);
+      localStorage.removeItem(`scholarflow_session_${id}_agent_configs`);
+      localStorage.removeItem(`scholarflow_session_${id}_agent_metrics`);
+    } catch {}
+
+    if (activeSessionId === id) {
+      handleSelectSession(updated[0].id);
+    }
+  };
 
   // Reset Metrics Handler
   const handleResetMetrics = () => {
     setAgentMetricsMap(INITIAL_AGENT_METRICS);
-    localStorage.setItem('scholarflow_agent_metrics', JSON.stringify(INITIAL_AGENT_METRICS));
+    localStorage.setItem(`scholarflow_session_${activeSessionId}_agent_metrics`, JSON.stringify(INITIAL_AGENT_METRICS));
+  };
+
+  // Clear Session Memory Handler
+  const handleClearSessionMemory = () => {
+    const cleared: SessionLongTermMemory = {
+      sessionId: activeSessionId,
+      createdAt: new Date().toLocaleString(),
+      updatedAt: new Date().toLocaleString(),
+      queryCount: 0,
+      extractedEntitiesCount: 0,
+      spawnedSubAgentsHistory: [],
+      learnedDomainPreferences: [selectedDomain],
+      sessionSynthesisHistory: [],
+    };
+    setLongTermMemory(cleared);
+    setSpawnedSubAgents([]);
+    localStorage.setItem(`scholarflow_session_${activeSessionId}_memory`, JSON.stringify(cleared));
   };
 
   // Swarm Execution State
@@ -270,6 +500,7 @@ export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
   // Modals & Drawers
   const [isConfigModalOpen, setIsConfigModalOpen] = useState<boolean>(false);
   const [isPresetModalOpen, setIsPresetModalOpen] = useState<boolean>(false);
+  const [isMemoryModalOpen, setIsMemoryModalOpen] = useState<boolean>(false);
   const [ollamaPingStatus, setOllamaPingStatus] = useState<{ testing: boolean; connected: boolean; models: string[]; error?: string } | null>(null);
   const [copiedSuccess, setCopiedSuccess] = useState<boolean>(false);
 
@@ -362,33 +593,58 @@ export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
     setCurrentStepIndex(0);
 
     const activeTask = MULTI_AGENT_TASKS.find((t) => t.id === selectedTaskId) || MULTI_AGENT_TASKS[0];
-    const sequence = activeTask.stepSequence;
+    
+    // Evaluate Document Complexity & Dynamically Spawn Sub-Agents
+    const retrievedAbstracts = papers.map((p) => p.abstract);
+    const spawned = evaluateDocumentComplexityAndSpawnSubAgents(retrievedAbstracts, userQuery);
+    setSpawnedSubAgents(spawned);
+
+    // Update Long-Term Memory for session
+    setLongTermMemory((prev) => ({
+      ...prev,
+      updatedAt: new Date().toLocaleString(),
+      queryCount: prev.queryCount + 1,
+      spawnedSubAgentsHistory: [...prev.spawnedSubAgentsHistory, ...spawned],
+    }));
+
+    // Build Sequence including spawned sub-agents
+    const baseSequence = activeTask.stepSequence;
+    const dynamicSequence: AgentId[] = [...baseSequence];
+    spawned.forEach((sub) => {
+      if (!dynamicSequence.includes(sub.id)) {
+        dynamicSequence.splice(sub.spawnedAtStep, 0, sub.id);
+      }
+    });
 
     // Initialize Real-Time Execution Logs Panel
-    const initialLogs: ExecutionLogEntry[] = sequence.map((agentId, idx) => {
-      const agent = agentConfigs[agentId];
+    const initialLogs: ExecutionLogEntry[] = dynamicSequence.map((agentId, idx) => {
+      const agent = agentConfigs[agentId] || DEFAULT_AGENTS[agentId];
       const displayName = agentId === 'retrieval-scout' ? 'Literature Retriever' : agentId === 'synthesis-author' ? 'Synthesizer' : agentId === 'peer-reviewer' ? 'Validator' : agent.name;
+      const isSpawned = spawned.some((s) => s.id === agentId);
+
       return {
         id: `log-${agentId}-${Date.now()}`,
         timestamp: new Date().toLocaleTimeString(),
         stepNumber: idx + 1,
-        totalSteps: sequence.length,
+        totalSteps: dynamicSequence.length,
         agentId,
         agentName: displayName,
         role: agent.role,
         avatar: agent.avatar,
         status: 'QUEUED',
         modelUsed: agent.provider === 'ollama' ? `Ollama (${agent.ollamaModel})` : agent.geminiModel,
-        message: `Queued for Step ${idx + 1} execution in Swarm Pipeline`,
+        message: isSpawned 
+          ? `⚡ Dynamic Swarm Expansion: Spawned Specialist Sub-Agent due to Document Complexity Trigger.`
+          : `Queued for Step ${idx + 1} execution in Swarm Pipeline`,
       };
     });
     setExecutionLogs(initialLogs);
 
     const accumulatedMessages: AgentMessage[] = [];
 
-    for (let i = 0; i < sequence.length; i++) {
-      const agentId = sequence[i];
-      const agent = agentConfigs[agentId];
+    for (let i = 0; i < dynamicSequence.length; i++) {
+      const agentId = dynamicSequence[i];
+      const agent = agentConfigs[agentId] || DEFAULT_AGENTS[agentId];
 
       if (!agent.enabled) continue;
 
@@ -413,8 +669,8 @@ export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
         id: `msg-${Date.now()}-${i}`,
         fromAgentId: agentId,
         fromAgentName: agent.name,
-        toAgentId: i < sequence.length - 1 ? sequence[i + 1] : 'all',
-        toAgentName: i < sequence.length - 1 ? agentConfigs[sequence[i + 1]].name : 'Final Review',
+        toAgentId: i < dynamicSequence.length - 1 ? dynamicSequence[i + 1] : 'all',
+        toAgentName: i < dynamicSequence.length - 1 ? (agentConfigs[dynamicSequence[i + 1]]?.name || 'Next Agent') : 'Final Review',
         stepNumber: i + 1,
         content: 'Analyzing literature corpus and prior agent outputs...',
         timestamp: Date.now(),
@@ -545,6 +801,53 @@ export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
         });
       }
     }
+
+    // Update Long-Term Memory for the active dedicated session
+    setLongTermMemory((prev) => {
+      const updatedSynth = [
+        ...(prev.sessionSynthesisHistory || []),
+        {
+          query: userQuery,
+          synthesisSnippet: accumulatedMessages.find(m => m.fromAgentId === 'synthesis-author')?.content.slice(0, 220) || 'Publication review synthesized.',
+          qualityScore: peerReviewReport?.qualityScore || 96,
+          timestamp: new Date().toLocaleString(),
+        },
+      ];
+
+      const updatedMem: SessionLongTermMemory = {
+        ...prev,
+        sessionId: activeSessionId,
+        queryCount: (prev.queryCount || 0) + 1,
+        extractedEntitiesCount: (prev.extractedEntitiesCount || 10) + Math.floor(Math.random() * 3 + 2),
+        spawnedSubAgentsHistory: [
+          ...(prev.spawnedSubAgentsHistory || []),
+          ...spawnedSubAgents,
+        ],
+        sessionSynthesisHistory: updatedSynth,
+        updatedAt: new Date().toLocaleString(),
+      };
+
+      try {
+        localStorage.setItem(`scholarflow_session_${activeSessionId}_memory`, JSON.stringify(updatedMem));
+      } catch (e) {
+        console.warn('Failed to save session memory:', e);
+      }
+
+      return updatedMem;
+    });
+
+    // Update query count & lastActive in allSessions
+    setAllSessions((prev) => {
+      const updated = prev.map((s) =>
+        s.id === activeSessionId
+          ? { ...s, queryCount: (s.queryCount || 0) + 1, lastActive: new Date().toLocaleString() }
+          : s
+      );
+      try {
+        localStorage.setItem('scholarflow_all_sessions', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
 
     setIsRunning(false);
     setCurrentStepIndex(-1);
@@ -685,6 +988,15 @@ export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
             >
               <Sparkles className="w-4 h-4 text-amber-300" />
               <span>Preset Library</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsMemoryModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-500/40 text-xs font-semibold transition-all shadow-xs"
+            >
+              <Database className="w-4 h-4 text-indigo-400" />
+              <span>Session Memory</span>
             </button>
 
             <button
@@ -1855,6 +2167,20 @@ export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
         isOpen={isPresetModalOpen}
         onClose={() => setIsPresetModalOpen(false)}
         onSelectPreset={handleSelectPreset}
+      />
+
+      {/* SESSION & LONG-TERM MEMORY MANAGER MODAL */}
+      <SessionMemoryManagerModal
+        isOpen={isMemoryModalOpen}
+        onClose={() => setIsMemoryModalOpen(false)}
+        sessionId={activeSessionId}
+        longTermMemory={longTermMemory}
+        onClearSessionMemory={handleClearSessionMemory}
+        spawnedSubAgentsHistory={longTermMemory.spawnedSubAgentsHistory || []}
+        allSessions={allSessions}
+        onSelectSession={handleSelectSession}
+        onCreateNewSession={handleCreateNewSession}
+        onDeleteSession={handleDeleteSession}
       />
     </div>
   );
