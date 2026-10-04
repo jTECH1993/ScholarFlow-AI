@@ -23,6 +23,7 @@ import { SavedCitationsDrawer } from './components/SavedCitationsDrawer';
 import { AdminPortal } from './components/AdminPortal';
 import { AdminGatekeeper } from './components/AdminGatekeeper';
 import { AdminSecurityModal } from './components/AdminSecurityModal';
+import { MultiAgentWorkbench } from './components/MultiAgentWorkbench';
 import { 
   ChatMessage, 
   VitalSignPaper, 
@@ -681,6 +682,15 @@ export const App: React.FC = () => {
                   activeDomain={activeDomain}
                   setActiveDomain={setActiveDomain}
                   sessionId={sessionId}
+                />
+              )}
+
+              {/* Multi-Agent Swarm Workbench */}
+              {activeTab === 'agents' && (
+                <MultiAgentWorkbench
+                  papers={filteredPapers}
+                  activeDomain={activeDomain}
+                  onOpenUploadModal={() => setIsUploadModalOpen(true)}
                 />
               )}
 

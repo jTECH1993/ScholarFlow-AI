@@ -26,6 +26,7 @@ import {
   Zap,
   TrendingUp,
   FileCode2,
+  Bot,
   ExternalLink
 } from 'lucide-react';
 import { ActiveResearchDomain } from '../types';
@@ -201,8 +202,29 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             </div>
           </div>
 
-          {/* 4 Action Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          {/* 5 Action Cards including Multi-Agent Swarm */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            {/* Action 0: Multi-Agent Swarm */}
+            <div 
+              onClick={() => onNavigateTab('agents')}
+              className="bg-gradient-to-br from-indigo-900 to-slate-900 dark:from-indigo-950 dark:to-slate-950 p-4 rounded-2xl border border-indigo-500/30 hover:border-indigo-400 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between text-white"
+            >
+              <div>
+                <div className="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-400/40 text-indigo-300 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+                  <Bot className="w-5 h-5 text-indigo-400" />
+                </div>
+                <h3 className="text-xs font-bold text-white mb-0.5 flex items-center justify-between">
+                  <span>Multi-Agent Swarm</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/30 font-mono text-indigo-200">5 Agents</span>
+                </h3>
+                <p className="text-3xs text-indigo-200/80">Ollama & Gemini Agents</p>
+              </div>
+              <div className="mt-3 text-3xs font-bold text-indigo-300 flex items-center space-x-1 group-hover:translate-x-0.5 transition-transform">
+                <span>Launch Swarm</span>
+                <ArrowRight className="w-3 h-3" />
+              </div>
+            </div>
+
             {/* Action 1: Upload */}
             <div 
               onClick={onOpenUpload}

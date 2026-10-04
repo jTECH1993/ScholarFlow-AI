@@ -110,7 +110,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
                   Enterprise
                 </span>
               </div>
-              <p className="text-3xs text-slate-400">Institutional Literature Intelligence &amp; Multi-Tenant RAG</p>
+              <p className="text-3xs text-slate-400">Multi-Agent Research Intelligence System</p>
             </div>
           </div>
 

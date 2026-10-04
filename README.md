@@ -1,4 +1,4 @@
-# ScholarFlow AI — Universal Academic Research & Literature RAG
+# ScholarFlow AI — Multi-Agent Research Intelligence System
 
 > **Enterprise Multi-Tenant Literature Intelligence & Evidence-Grounded Research Synthesis Platform**  
 > Serving scholars, researchers, faculty, and students across **all academic disciplines** with dual interfaces, isolated session management, and dedicated single-LLM orchestration.
@@ -13,10 +13,11 @@
 5. [Single-LLM Multi-Tenant Session Isolation Architecture](#-single-llm-multi-tenant-session-isolation-architecture)
 6. [State-of-the-Art RAG Pipeline & Semantic Routing](#-state-of-the-art-rag-pipeline--semantic-routing)
 7. [AI Engine: Google Gemini & Offline Local Ollama](#-ai-engine-google-gemini--offline-local-ollama)
-8. [Dynamic Domain & Modality Adaptation](#-dynamic-domain--modality-adaptation)
-9. [Project Structure & Tech Stack](#-project-structure--tech-stack)
-10. [Getting Started, Configuration & Deployment](#-getting-started-configuration--deployment)
-11. [Verification & Quality Assurance](#-verification--quality-assurance)
+8. [Collaborative Multi-Agent Intelligence Swarm](#-collaborative-multi-agent-intelligence-swarm)
+9. [Dynamic Domain & Modality Adaptation](#-dynamic-domain--modality-adaptation)
+10. [Project Structure & Tech Stack](#-project-structure--tech-stack)
+11. [Getting Started, Configuration & Deployment](#-getting-started-configuration--deployment)
+12. [Verification & Quality Assurance](#-verification--quality-assurance)
 
 ---
 
@@ -301,12 +302,71 @@ ScholarFlow AI offers dual model support, catering to both cloud computing and z
 
 | Feature | Google Gemini 2.5 Flash (Cloud) | Local Ollama Bridge (100% Offline) |
 | :--- | :--- | :--- |
-| **Model** | `gemini-2.5-flash` / `gemini-1.5-pro` | `llama3.2`, `qwen2.5`, `deepseek-r1`, `mistral` |
+| **Model** | `gemini-2.5-flash` / `gemini-1.5-pro` | `llama3.2`, `qwen2.5`, `deepseek-r1`, `mistral`, `gemma2` |
 | **Hosting** | Google Cloud / Server-Side API | Local workstation (`http://localhost:11434`) |
 | **Privacy** | Enterprise TLS 1.3 & Server-Side Key | Completely local; zero bytes leave the machine |
 | **Latency** | ~350–600ms streaming | Dependent on local hardware (GPU/Metal/CPU) |
 | **Internet Required** | Yes | No (Fully Air-Gapped) |
 | **Switch Mechanism** | One-click toggle in top navigation bar | One-click toggle in top navigation bar |
+
+---
+
+## 🤖 Collaborative Multi-Agent Intelligence Swarm
+
+ScholarFlow AI includes a **Multi-Agent Collaboration Architecture** where **5 specialized AI agents** collaborate sequentially and in dynamic consensus loops to execute complex research tasks:
+
+```
+[ USER RESEARCH INQUIRY / TASK ]
+                │
+                ▼
+┌──────────────────────────────────────────────┐
+│  🔍 Agent 1: Retrieval & Evidence Scout      │ ◄── [ Hybrid Vector / BM25 RAG Corpus ]
+│  • Extracts exact quotes & page numbers      │
+└──────────────────────┬───────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────┐
+│  ⚖️ Agent 2: Methodology & Statistical Auditor│ ◄── [ Hardware, Cohort & Error Metric Audit ]
+│  • Evaluates sample size, MAE/RMSE, bias     │
+└──────────────────────┬───────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────┐
+│  ⚡ Agent 3: Controversy & Consensus Analyst │ ◄── [ Cross-Paper Debate & Agreement Map ]
+│  • Identifies agreeing vs competing claims   │
+└──────────────────────┬───────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────┐
+│  🧠 Agent 4: Lead Academic Synthesis Author  │ ◄── [ Publication-Grade Manuscript Drafting ]
+│  • Integrates insights with citations        │
+└──────────────────────┬───────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────┐
+│  🛡️ Agent 5: Peer Reviewer & Quality Guard   │ ◄── [ Citation Audit & Scorecard ]
+│  • Verifies fidelity & computes score (0-100)│
+└──────────────────────────────────────────────┘
+```
+
+### 🌟 Specialized Agent Roles & Configuration
+1. **🔍 Agent 1: Retrieval & Evidence Scout**: Searches the indexed literature corpus using hybrid BM25 + dense vector embeddings, isolates exact quotes, page numbers, and empirical datasets.
+2. **⚖️ Agent 2: Methodology & Statistical Auditor**: Audits experimental setups, transducer hardware (e.g. green PPG vs 60 GHz mmWave FMCW radar), sample sizes, ground truth reference standards, and statistical error bounds (MAE, RMSE, AUROC).
+3. **⚡ Agent 3: Controversy & Consensus Analyst**: Detects areas of cross-paper agreement vs active scholarly debate, opposing viewpoints, and unresolved theoretical tensions.
+4. **🧠 Agent 4: Lead Academic Synthesis Author**: Combines evidence, methodology audits, and controversy maps into a publication-grade academic review manuscript with formal citations and formatted comparison tables.
+5. **🛡️ Agent 5: Peer Reviewer & Quality Guard**: Audits the draft manuscript against raw source chunks to verify citation accuracy, eliminate hallucinated claims, and produce a Peer Review Scorecard (Quality Score, Citation Fidelity Score, Hallucination Risk Rating).
+
+### ⚙️ Multi-Task Execution Workflows
+- **Deep Multi-Agent Literature Review**: Full sequential 5-agent synthesis producing publication-ready manuscripts.
+- **Hypothesis Stress-Test & Devil's Advocate**: Adversarial agent debate challenging scientific hypotheses against counter-evidence.
+- **Cross-Corpus Benchmark & Gap Analysis**: Quantitative extraction of reported numerical error bounds and unaddressed research gaps.
+- **Custom Multi-Agent Swarm Collaboration**: User-configured collaborative research pipelines.
+
+### 🔌 Per-Agent LLM Provider Assignment (Ollama & Gemini)
+Each of the 5 agents can be assigned its own LLM provider independently:
+- **Local Ollama Models**: Run `llama3.2:3b`, `mistral:7b`, `deepseek-r1:7b`, `qwen2.5:7b`, `gemma2:9b`, or `phi3:3.8b` locally via `http://localhost:11434`.
+- **Google Gemini 2.5 Flash**: Cloud inference with multimodal vision support.
+- **1-Click Swarm Presets**: Apply "All Local Ollama", "All Gemini Flash", or "Hybrid Swarm" across all agents in one click.
 
 ---
 
@@ -327,29 +387,38 @@ Researchers can seamlessly adapt the platform to their specific research scope:
 ├── index.html                   # Application entry point with semantic metadata
 ├── metadata.json                # Project identity and capabilities configuration
 ├── package.json                 # Dependencies and build scripts
-├── server.ts                    # Express backend, Gemini API proxy & Vite middleware
+├── server.ts                    # Express backend, Gemini API proxy, Ollama bridge & Vite middleware
 ├── src/
 │   ├── main.tsx                 # React DOM mount
 │   ├── App.tsx                  # Master application controller, navigation & session state
 │   ├── index.css                # Tailwind CSS global styles
-│   ├── types.ts                 # Comprehensive TypeScript interfaces & schemas
-│   ├── lib/
-│   │   ├── firebase.ts          # Firebase Auth, Firestore persistence & error handling
-│   │   ├── gemini.ts            # Client-side LLM orchestrator & Ollama bridge
+│   ├── types.ts                 # Comprehensive TypeScript interfaces, multi-agent schemas & types
+│   ├── services/
+│   │   ├── multiAgentEngine.ts  # Multi-Agent Swarm Orchestrator (5 specialized agents, task workflows)
 │   │   ├── ragEngine.ts         # BM25, Cosine, RRF, SemanticRouter & MMR implementation
-│   │   └── curatedPapers.ts     # Pre-indexed benchmark research corpus
+│   │   ├── academicChunker.ts   # Semantic section-based academic chunking engine
+│   │   └── academicClassifier.ts# Multidisciplinary research category classification
+│   ├── lib/
+│   │   └── firebase.ts          # Firebase Auth, Firestore persistence & error handling
+│   ├── data/
+│   │   ├── vitalSignPapers.ts   # Pre-indexed benchmark research corpus
+│   │   ├── researchDomainTopics.ts # Discipline topics and example query prompts
+│   │   └── clinicalPerspectives.ts # Role perspective guidelines and system prompts
 │   └── components/
 │       ├── TopHeader.tsx        # Brand header, model selector & profile dropdown
+│       ├── LeftSidebar.tsx      # Application navigation sidebar with Multi-Agent Swarm link
+│       ├── MultiAgentWorkbench.tsx # Collaborative 5-Agent Swarm Canvas & Ollama controller
+│       ├── HomeDashboard.tsx    # Multi-domain dashboard & quick-start research cards
 │       ├── LoginScreen.tsx      # Multi-tenant authentication (Sign In / Register / Reset)
 │       ├── AdminPortal.tsx      # Telemetry, active sessions & global hyperparameter controls
 │       ├── AdminSecurityModal.tsx # Passkey & RBAC authentication barrier for Admin Portal
-│       ├── ScholarChat.tsx      # Evidence-grounded conversational research interface
+│       ├── ChatInterface.tsx    # Evidence-grounded conversational research interface
 │       ├── LiteratureReviewGenerator.tsx # Automated multi-paper synthesis generator
-│       ├── ResearchCorpusExplorer.tsx # Paper repository, chunk inspector & uploader
-│       ├── PersonalNotebook.tsx # Bookmark citations & export to BibTeX
-│       ├── SignalProcessingLab.tsx # Interactive biomedical & radar waveform workbench
-│       ├── CitationCard.tsx     # Evidentiary citation badge with metadata
-│       └── AuthModal.tsx        # Modal login overlay for workspace sessions
+│       ├── CorpusExplorer.tsx   # Paper repository, chunk inspector & uploader
+│       ├── UploadManagePage.tsx # Drag-and-drop document ingestion & batch analysis
+│       ├── BenchmarkMatrix.tsx  # Cross-paper comparative performance matrix
+│       ├── SignalWorkbench.tsx  # Interactive biomedical waveform & radar signal laboratory
+│       └── SubmissionExporter.tsx # LaTeX manuscript, BibTeX & Streamlit script exporter
 ```
 
 ---
@@ -383,7 +452,7 @@ Navigate to `http://localhost:3000` in your web browser.
    ollama pull llama3.2:3b
    ```
 3. Ensure the Ollama service is active (`ollama serve`).
-4. In ScholarFlow AI, open the provider selector in the top navigation bar and select **Local Ollama**.
+4. In ScholarFlow AI, open the **Multi-Agent Swarm Workbench** or model selector and select **Local Ollama**.
 
 ### 5. Production Build & Deployment
 ```bash
@@ -406,7 +475,10 @@ ScholarFlow AI enforces strict code quality and compilation checks:
 ---
 
 ## 📄 Summary of Recent System Refactoring
-- **Universal Enterprise Authentication**: Removed all hardcoded credentials and 1-click bypasses in favor of standard multi-tenant registration, login, and self-service password recovery.
+- **Collaborative Multi-Agent Swarm**: Introduced a 5-agent AI pipeline (*Retrieval Scout, Methodology Auditor, Controversy Analyst, Lead Synthesis Author, Peer Reviewer*) with live pipeline visualization, turn-by-turn thought streams, and scorecard audits.
+- **Local Ollama & Multi-Model Integration**: Full support for Local Ollama models (`llama3.2`, `mistral`, `deepseek-r1`, `qwen2.5`, `gemma2`) assigned per-agent or globally with 1-click presets.
+- **Universal Enterprise Authentication**: Standardized multi-tenant registration, login, and password recovery via Firebase Auth without hardcoded accounts.
 - **Isolated Multi-Tenant Security**: Guaranteed cryptographic boundaries between user sessions, ensuring document chunks and chat histories are never cross-pollinated.
+- **Enhanced Role-Based Controls**: Administrative privileges strictly require verified `Administrator` roles and secure hardware passkeys.
 - **Enhanced Role-Based Controls**: Elevated administrative privileges strictly require verified `Administrator` roles and secure hardware passkeys.
 - **Disciplined Documentation**: Fully articulated architecture, mathematical formulations, and engineering principles across this README.

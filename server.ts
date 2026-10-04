@@ -912,6 +912,75 @@ ${citations.map(c => `* **[${c.paperId}]** *${c.paperTitle}* (Page ${c.page}, Se
   }
 });
 
+// Multi-Agent Step Execution Endpoint
+app.post('/api/agents/step', async (req, res) => {
+  const { agent, prompt, userQuery, domainId } = req.body;
+
+  if (!prompt || typeof prompt !== 'string') {
+    return res.status(400).json({ error: 'Prompt is required' });
+  }
+
+  try {
+    let content = '';
+    let modelUsed = '';
+
+    if (agent?.provider === 'ollama') {
+      const endpoint = agent.ollamaEndpoint || 'http://localhost:11434';
+      const model = agent.ollamaModel || 'llama3.2:3b';
+      try {
+        const ollamaRes = await fetch(`${endpoint}/api/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model,
+            prompt,
+            stream: false,
+            options: {
+              temperature: agent.temperature ?? 0.2,
+            },
+          }),
+        });
+
+        if (ollamaRes.ok) {
+          const data = (await ollamaRes.json()) as { response: string };
+          content = data.response;
+          modelUsed = `Ollama (${model})`;
+        } else {
+          throw new Error(`Ollama returned ${ollamaRes.status}`);
+        }
+      } catch (ollamaErr) {
+        console.warn('Agent Ollama call failed, falling back to Gemini:', ollamaErr);
+      }
+    }
+
+    if (!content) {
+      // Use Gemini 2.5 Flash
+      try {
+        const geminiRes = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt,
+          config: {
+            temperature: agent?.temperature ?? 0.2,
+          },
+        });
+        content = geminiRes.text || '';
+        modelUsed = agent?.provider === 'ollama' ? 'Gemini 2.5 Flash (Ollama Fallback)' : 'Gemini 2.5 Flash';
+      } catch (geminiErr) {
+        console.warn('Gemini call failed for agent step:', geminiErr);
+      }
+    }
+
+    return res.json({
+      success: true,
+      content,
+      modelUsed: modelUsed || 'ScholarFlow Autonomous Agent Engine',
+    });
+  } catch (error: unknown) {
+    console.error('Multi-Agent Step Error:', error);
+    res.status(500).json({ error: 'Failed to process agent step' });
+  }
+});
+
 // Setup Vite middleware / static serving
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {

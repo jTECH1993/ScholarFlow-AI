@@ -283,3 +283,89 @@ export interface ResearchProjectItem {
   tags: string[];
 }
 
+// Multi-Agent Collaboration Framework Types
+export type AgentId = 
+  | 'retrieval-scout'
+  | 'methodology-auditor'
+  | 'consensus-analyst'
+  | 'synthesis-author'
+  | 'peer-reviewer';
+
+export interface AgentConfig {
+  id: AgentId;
+  name: string;
+  role: string;
+  avatar: string;
+  color: string;
+  description: string;
+  provider: LLMProvider;
+  ollamaModel: string;
+  ollamaEndpoint: string;
+  geminiModel: string;
+  temperature: number;
+  systemPrompt: string;
+  enabled: boolean;
+}
+
+export type AgentTaskType = 
+  | 'systematic-review'
+  | 'hypothesis-test'
+  | 'benchmark-gap'
+  | 'custom-workflow';
+
+export interface AgentMessage {
+  id: string;
+  fromAgentId: AgentId | 'user';
+  fromAgentName: string;
+  toAgentId: AgentId | 'all';
+  toAgentName: string;
+  stepNumber: number;
+  content: string;
+  timestamp: number;
+  thoughtChain?: string;
+  status: 'pending' | 'thinking' | 'done' | 'failed';
+  modelUsed?: string;
+  executionTimeMs?: number;
+}
+
+export interface PeerReviewReport {
+  qualityScore: number; // 0-100
+  citationFidelityScore: number; // 0-100
+  hallucinationRisk: 'Low' | 'Medium' | 'High';
+  methodologicalRigour: string;
+  strengths: string[];
+  suggestedRevisions: string[];
+  approvalStatus: 'Approved for Publication' | 'Approved with Minor Revisions' | 'Requires Further Evidence';
+}
+
+export interface AgentSwarmSession {
+  id: string;
+  taskId: AgentTaskType;
+  taskTitle: string;
+  userQuery: string;
+  domainId: string;
+  agents: Record<AgentId, AgentConfig>;
+  messages: AgentMessage[];
+  finalSynthesis?: string;
+  peerReviewReport?: PeerReviewReport;
+  status: 'idle' | 'running' | 'completed' | 'error';
+  createdAt: string;
+  latencyTotalMs?: number;
+}
+
+export interface AgentPerformanceMetrics {
+  agentId: AgentId;
+  agentName: string;
+  role: string;
+  avatar: string;
+  totalExecutions: number;
+  successfulExecutions: number;
+  failedExecutions: number;
+  successRate: number; // 0 - 100%
+  totalExecutionTimeMs: number;
+  avgExecutionTimeMs: number;
+  lastExecutionTimeMs?: number;
+  provider: LLMProvider;
+  modelUsed?: string;
+}
+

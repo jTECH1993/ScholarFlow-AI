@@ -15,11 +15,13 @@ import {
   Sparkles, 
   Crown,
   BookOpen,
+  Bot,
   X
 } from 'lucide-react';
 
 export type AppNavTab = 
   | 'home'
+  | 'agents'
   | 'chat'
   | 'upload'
   | 'literature'
@@ -57,6 +59,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
 
   const primaryNavItems: { id: AppNavTab; label: string; icon: React.ReactNode; badge?: string }[] = [
     { id: 'home', label: 'Home', icon: <Home className="w-4 h-4" /> },
+    { id: 'agents', label: 'Multi-Agent Swarm', icon: <Bot className="w-4 h-4" />, badge: '5 Agents' },
     { id: 'chat', label: 'Scholar Chat', icon: <MessageSquare className="w-4 h-4" /> },
     { id: 'upload', label: 'Upload & Library', icon: <UploadCloud className="w-4 h-4" /> },
     { id: 'literature', label: 'Literature Review', icon: <FileText className="w-4 h-4" /> },
@@ -109,7 +112,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
                 <span className="font-extrabold text-slate-900 dark:text-white text-sm tracking-tight">ScholarFlow AI</span>
                 <span className="text-3xs font-bold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950 px-1 py-0.2 rounded">TM</span>
               </div>
-              <p className="text-3xs text-slate-400 dark:text-slate-500 font-medium">Research Smarter. Discover Deeper.</p>
+              <p className="text-3xs text-slate-400 dark:text-slate-500 font-medium">Multi-Agent Research Intelligence</p>
             </div>
           </button>
 
