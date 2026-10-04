@@ -30,6 +30,8 @@ import {
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { AgentCollaborationGraph } from './AgentCollaborationGraph';
+import { AgentPerformanceHeatmap } from './AgentPerformanceHeatmap';
+import { PresetLibraryModal, PipelinePreset } from './PresetLibraryModal';
 import { 
   AgentId, 
   AgentConfig, 
@@ -265,8 +267,16 @@ export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
 
   // Modals & Drawers
   const [isConfigModalOpen, setIsConfigModalOpen] = useState<boolean>(false);
+  const [isPresetModalOpen, setIsPresetModalOpen] = useState<boolean>(false);
   const [ollamaPingStatus, setOllamaPingStatus] = useState<{ testing: boolean; connected: boolean; models: string[]; error?: string } | null>(null);
   const [copiedSuccess, setCopiedSuccess] = useState<boolean>(false);
+
+  // Apply Pipeline Preset Handler
+  const handleSelectPreset = (preset: PipelinePreset) => {
+    setSelectedTaskId(preset.taskId);
+    setUserQuery(preset.defaultQuery);
+    applyGlobalPreset(preset.recommendedPreset);
+  };
 
   // Execution Log Panel State
   const [executionLogs, setExecutionLogs] = useState<ExecutionLogEntry[]>(INITIAL_EXECUTION_LOGS);
@@ -646,6 +656,15 @@ export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
               type="button"
+              onClick={() => setIsPresetModalOpen(true)}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold transition-all shadow-md active:scale-98"
+            >
+              <Sparkles className="w-4 h-4 text-amber-300" />
+              <span>Preset Library</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setIsConfigModalOpen(true)}
               className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700/80 text-xs font-semibold transition-all shadow-xs hover:border-indigo-500/50"
             >
@@ -947,6 +966,12 @@ export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
           ))}
         </div>
       </div>
+
+      {/* VISUAL PERFORMANCE HEATMAP */}
+      <AgentPerformanceHeatmap
+        agentConfigs={agentConfigs}
+        agentMetricsMap={agentMetricsMap}
+      />
 
       {/* STEP-BY-STEP REAL-TIME EXECUTION LOG PANEL */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
@@ -1775,6 +1800,13 @@ export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
           </div>
         </div>
       )}
+
+      {/* PRESET LIBRARY MODAL */}
+      <PresetLibraryModal
+        isOpen={isPresetModalOpen}
+        onClose={() => setIsPresetModalOpen(false)}
+        onSelectPreset={handleSelectPreset}
+      />
     </div>
   );
 };
