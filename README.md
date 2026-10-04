@@ -313,48 +313,80 @@ ScholarFlow AI offers dual model support, catering to both cloud computing and z
 
 ## 🤖 Collaborative Multi-Agent Intelligence Swarm
 
-ScholarFlow AI includes a **Multi-Agent Collaboration Architecture** where **5 specialized AI agents** collaborate sequentially and in dynamic consensus loops to execute complex research tasks:
+ScholarFlow AI features a **Multi-Agent Collaboration Architecture** where **5 specialized AI agents** collaborate sequentially and in dynamic consensus loops to execute complex academic research tasks:
 
 ```
-[ USER RESEARCH INQUIRY / TASK ]
+[ USER RESEARCH INQUIRY / Prompt ]
                 │
                 ▼
 ┌──────────────────────────────────────────────┐
-│  🔍 Agent 1: Retrieval & Evidence Scout      │ ◄── [ Hybrid Vector / BM25 RAG Corpus ]
-│  • Extracts exact quotes & page numbers      │
+│  🔍 Agent 1: Literature Retriever           │ ◄── [ Hybrid Vector / BM25 RAG Corpus ]
+│  • Quote & Chunk Extractor                   │
 └──────────────────────┬───────────────────────┘
-                       │
+                       │ 📦 Data Transfer: Retrieved Chunks & Evidence Quotes (14.2 KB)
                        ▼
 ┌──────────────────────────────────────────────┐
-│  ⚖️ Agent 2: Methodology & Statistical Auditor│ ◄── [ Hardware, Cohort & Error Metric Audit ]
-│  • Evaluates sample size, MAE/RMSE, bias     │
+│  ⚖️ Agent 2: Methodology Auditor             │ ◄── [ Hardware, Cohort & Error Metric Audit ]
+│  • Design & Statistical Risk Auditor         │
 └──────────────────────┬───────────────────────┘
-                       │
+                       │ 📦 Data Transfer: Experimental Audit & Error Bounds (MAE/RMSE)
                        ▼
 ┌──────────────────────────────────────────────┐
-│  ⚡ Agent 3: Controversy & Consensus Analyst │ ◄── [ Cross-Paper Debate & Agreement Map ]
-│  • Identifies agreeing vs competing claims   │
+│  ⚡ Agent 3: Consensus Analyst               │ ◄── [ Cross-Paper Debate & Agreement Map ]
+│  • Debate & Agreement Matrix Mapper          │
 └──────────────────────┬───────────────────────┘
-                       │
+                       │ 📦 Data Transfer: Controversy Map & Agreement Matrix
                        ▼
 ┌──────────────────────────────────────────────┐
-│  🧠 Agent 4: Lead Academic Synthesis Author  │ ◄── [ Publication-Grade Manuscript Drafting ]
-│  • Integrates insights with citations        │
+│  🧠 Agent 4: Synthesizer                     │ ◄── [ Publication-Grade Manuscript Drafting ]
+│  • Publication Review Drafter & Author       │
 └──────────────────────┬───────────────────────┘
-                       │
+                       │ 📦 Data Transfer: Synthesized Review & Thesis (8.4 KB)
                        ▼
 ┌──────────────────────────────────────────────┐
-│  🛡️ Agent 5: Peer Reviewer & Quality Guard   │ ◄── [ Citation Audit & Scorecard ]
-│  • Verifies fidelity & computes score (0-100)│
-└──────────────────────────────────────────────┘
+│  🛡️ Agent 5: Validator                       │ ◄── [ Citation Audit & Quality Scorecard ]
+│  • Peer Review Auditor & Quality Guard       │
+└──────────────────────┬───────────────────────┘
+                       │ 📦 Data Transfer: Verified Scorecard & Citation Audit
+                       ▼
+          [ PUBLICATION REVIEW SYNTHESIS ]
 ```
 
-### 🌟 Specialized Agent Roles & Configuration
-1. **🔍 Agent 1: Retrieval & Evidence Scout**: Searches the indexed literature corpus using hybrid BM25 + dense vector embeddings, isolates exact quotes, page numbers, and empirical datasets.
-2. **⚖️ Agent 2: Methodology & Statistical Auditor**: Audits experimental setups, transducer hardware (e.g. green PPG vs 60 GHz mmWave FMCW radar), sample sizes, ground truth reference standards, and statistical error bounds (MAE, RMSE, AUROC).
-3. **⚡ Agent 3: Controversy & Consensus Analyst**: Detects areas of cross-paper agreement vs active scholarly debate, opposing viewpoints, and unresolved theoretical tensions.
-4. **🧠 Agent 4: Lead Academic Synthesis Author**: Combines evidence, methodology audits, and controversy maps into a publication-grade academic review manuscript with formal citations and formatted comparison tables.
-5. **🛡️ Agent 5: Peer Reviewer & Quality Guard**: Audits the draft manuscript against raw source chunks to verify citation accuracy, eliminate hallucinated claims, and produce a Peer Review Scorecard (Quality Score, Citation Fidelity Score, Hallucination Risk Rating).
+### 🌟 Specialized Agent Roster & Assigned Tasks
+
+| Agent Icon & Name | Role / Focus | Specific Assigned Task & Schema Output |
+| :--- | :--- | :--- |
+| **1. 🔍 Literature Retriever**<br>`retrieval-scout` | **Quote & Chunk Extractor** | Searches corpus using hybrid BM25 + Vector RAG. Extracts verbatim quotes, page numbers, trial cohort sizes, transducer specs, and citation keys. |
+| **2. ⚖️ Methodology Auditor**<br>`methodology-auditor` | **Design & Error Metric Auditor** | Audits experimental setups, transducer hardware (e.g., green PPG vs 60 GHz mmWave FMCW radar), sample sizes, ground truth reference standards, and statistical error bounds (MAE/RMSE). |
+| **3. ⚡ Consensus Analyst**<br>`consensus-analyst` | **Debate & Agreement Mapper** | Maps points of unanimous scientific consensus vs active scholarly debate across opposing author groups and sensing modalities. |
+| **4. 🧠 Synthesizer**<br>`synthesis-author` | **Publication Review Drafter** | Combines evidence chunks, risk audits, and debate maps into a publication-grade academic review manuscript with formatted comparison matrices and inline citations. |
+| **5. 🛡️ Validator**<br>`peer-reviewer` | **Citation Fidelity Auditor** | Audits manuscript citations against raw source chunks to verify accuracy, eliminate hallucinated claims, and produce a Peer Review Scorecard (0–100 Quality Score, Citation Fidelity %). |
+
+---
+
+### 🎨 Visual Agent Collaboration & Data Transfer Flow Graph
+ScholarFlow AI includes an interactive **D3 / SVG Collaboration Flow Graph** displaying real-time data streaming along Bezier paths:
+- **Explicit Data Transfer Payload Badges**: Edge buttons showing exact information passed (`📚 Retrieved Chunks`, `⚖️ Experimental Audits`, `⚡ Controversy Map`, `🧠 Synthesized Thesis`, `🛡️ Verified Scorecard`).
+- **Data Transfer Inspector**: Interactive panel displaying live content previews, data volume metrics (e.g., `6 Chunks • 14.2 KB`), and data schema keys.
+- **Dual View Modes**: Switch between **SVG Flow Graph View** and **Data Transfer Matrix View** for granular pipeline auditing.
+
+---
+
+### 📊 Agent Performance & Execution Time Summary Card
+Tracks execution time (latency) and success rates for every agent:
+- **Metrics Tracked**: Total executions, successful executions, failed/fallback runs, success rate %, average latency (s), and last latency (s).
+- **Swarm KPIs**: Displays overall Swarm Success Rate %, Average Step Latency, Fastest Agent, and Slowest Agent.
+- **Reset Stats**: Quick action button to clear and re-initialize performance statistics.
+
+---
+
+### 💻 Real-Time Step-by-Step Execution Log Panel
+Provides real-time visibility into the multi-agent pipeline:
+- **Step Status Badges**: Displays `QUEUED`, `RUNNING`, `DONE`, and `FALLBACK` status for steps `1/5` to `5/5`.
+- **Step Timeline Mode**: Visual card list showing step numbers, agent avatars, execution latencies, and output summaries.
+- **Monospace Terminal Trace Mode**: UTF-8 developer telemetry log with 1-click **Copy Trace** capability for debugging.
+
+---
 
 ### ⚙️ Multi-Task Execution Workflows
 - **Deep Multi-Agent Literature Review**: Full sequential 5-agent synthesis producing publication-ready manuscripts.
@@ -362,10 +394,12 @@ ScholarFlow AI includes a **Multi-Agent Collaboration Architecture** where **5 s
 - **Cross-Corpus Benchmark & Gap Analysis**: Quantitative extraction of reported numerical error bounds and unaddressed research gaps.
 - **Custom Multi-Agent Swarm Collaboration**: User-configured collaborative research pipelines.
 
+---
+
 ### 🔌 Per-Agent LLM Provider Assignment (Ollama & Gemini)
 Each of the 5 agents can be assigned its own LLM provider independently:
 - **Local Ollama Models**: Run `llama3.2:3b`, `mistral:7b`, `deepseek-r1:7b`, `qwen2.5:7b`, `gemma2:9b`, or `phi3:3.8b` locally via `http://localhost:11434`.
-- **Google Gemini 2.5 Flash**: Cloud inference with multimodal vision support.
+- **Google Gemini 2.5 Flash**: Cloud inference with high-speed streaming.
 - **1-Click Swarm Presets**: Apply "All Local Ollama", "All Gemini Flash", or "Hybrid Swarm" across all agents in one click.
 
 ---
@@ -384,7 +418,7 @@ Researchers can seamlessly adapt the platform to their specific research scope:
 ## 📁 Project Structure & Tech Stack
 
 ```
-├── index.html                   # Application entry point with semantic metadata
+├── index.html                   # Application entry point with semantic metadata & ScholarFlow title
 ├── metadata.json                # Project identity and capabilities configuration
 ├── package.json                 # Dependencies and build scripts
 ├── server.ts                    # Express backend, Gemini API proxy, Ollama bridge & Vite middleware
@@ -392,9 +426,9 @@ Researchers can seamlessly adapt the platform to their specific research scope:
 │   ├── main.tsx                 # React DOM mount
 │   ├── App.tsx                  # Master application controller, navigation & session state
 │   ├── index.css                # Tailwind CSS global styles
-│   ├── types.ts                 # Comprehensive TypeScript interfaces, multi-agent schemas & types
+│   ├── types.ts                 # Comprehensive TypeScript interfaces, multi-agent schemas & metrics
 │   ├── services/
-│   │   ├── multiAgentEngine.ts  # Multi-Agent Swarm Orchestrator (5 specialized agents, task workflows)
+│   │   ├── multiAgentEngine.ts  # Multi-Agent Swarm Orchestrator (5 specialized agents, step runner)
 │   │   ├── ragEngine.ts         # BM25, Cosine, RRF, SemanticRouter & MMR implementation
 │   │   ├── academicChunker.ts   # Semantic section-based academic chunking engine
 │   │   └── academicClassifier.ts# Multidisciplinary research category classification
@@ -407,8 +441,9 @@ Researchers can seamlessly adapt the platform to their specific research scope:
 │   └── components/
 │       ├── TopHeader.tsx        # Brand header, model selector & profile dropdown
 │       ├── LeftSidebar.tsx      # Application navigation sidebar with Multi-Agent Swarm link
-│       ├── MultiAgentWorkbench.tsx # Collaborative 5-Agent Swarm Canvas & Ollama controller
-│       ├── HomeDashboard.tsx    # Multi-domain dashboard & quick-start research cards
+│       ├── MultiAgentWorkbench.tsx # ScholarFlow AI — Multi-Agent Research Intelligence System Workbench
+│       ├── AgentCollaborationGraph.tsx # D3/SVG Visual Agent Collaboration Flow Graph & Data Transfer Inspector
+│       ├── HomeDashboard.tsx    # Multi-domain dashboard with Multi-Agent Swarm action card
 │       ├── LoginScreen.tsx      # Multi-tenant authentication (Sign In / Register / Reset)
 │       ├── AdminPortal.tsx      # Telemetry, active sessions & global hyperparameter controls
 │       ├── AdminSecurityModal.tsx # Passkey & RBAC authentication barrier for Admin Portal
@@ -475,10 +510,12 @@ ScholarFlow AI enforces strict code quality and compilation checks:
 ---
 
 ## 📄 Summary of Recent System Refactoring
-- **Collaborative Multi-Agent Swarm**: Introduced a 5-agent AI pipeline (*Retrieval Scout, Methodology Auditor, Controversy Analyst, Lead Synthesis Author, Peer Reviewer*) with live pipeline visualization, turn-by-turn thought streams, and scorecard audits.
+- **ScholarFlow AI Title Update**: Updated title to **ScholarFlow AI — Multi-Agent Research Intelligence System** across HTML, metadata, and app headers.
+- **Collaborative Multi-Agent Swarm**: Built a 5-agent AI pipeline (*Literature Retriever, Methodology Auditor, Consensus Analyst, Synthesizer, Validator*) with per-agent tasks and fallback execution logic.
+- **Visual Collaboration Flow Graph & Data Transfer Payloads**: Added an interactive SVG flow graph rendering Bezier paths, glowing active particles, and explicit Data Transfer Payload badges (`Retrieved Chunks`, `Experimental Audits`, `Controversy Map`, `Synthesized Review`, `Verified Scorecard`) with click-to-inspect data schemas.
+- **Agent Performance & Execution Time Summary Card**: Integrated real-time tracking of agent execution latencies (ms/s) and success rates %, along with overall Swarm KPIs and fastest/slowest agent metrics.
+- **Step-by-Step Execution Log Panel**: Real-time tracking of pipeline steps (`1/5` to `5/5`) with Step Timeline and Monospace Terminal Trace view modes.
 - **Local Ollama & Multi-Model Integration**: Full support for Local Ollama models (`llama3.2`, `mistral`, `deepseek-r1`, `qwen2.5`, `gemma2`) assigned per-agent or globally with 1-click presets.
 - **Universal Enterprise Authentication**: Standardized multi-tenant registration, login, and password recovery via Firebase Auth without hardcoded accounts.
 - **Isolated Multi-Tenant Security**: Guaranteed cryptographic boundaries between user sessions, ensuring document chunks and chat histories are never cross-pollinated.
-- **Enhanced Role-Based Controls**: Administrative privileges strictly require verified `Administrator` roles and secure hardware passkeys.
-- **Enhanced Role-Based Controls**: Elevated administrative privileges strictly require verified `Administrator` roles and secure hardware passkeys.
-- **Disciplined Documentation**: Fully articulated architecture, mathematical formulations, and engineering principles across this README.
+- **Disciplined Documentation**: Fully articulated architecture, mathematical formulations, data schemas, and engineering principles across this README.
