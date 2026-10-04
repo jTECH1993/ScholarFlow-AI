@@ -35,6 +35,7 @@ import {
 import ReactMarkdown from 'react-markdown';
 import { AgentCollaborationGraph } from './AgentCollaborationGraph';
 import { AgentPerformanceHeatmap } from './AgentPerformanceHeatmap';
+import { AgentCapabilityMatrix } from './AgentCapabilityMatrix';
 import { GlobalResearchInsightPanel } from './GlobalResearchInsightPanel';
 import { ResearchKnowledgeGraph } from './ResearchKnowledgeGraph';
 import { PresetLibraryModal, PipelinePreset } from './PresetLibraryModal';
@@ -1303,6 +1304,12 @@ export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
           ))}
         </div>
       </div>
+
+      {/* SWARM COMPOSITION & AGENT CAPABILITY MATRIX */}
+      <AgentCapabilityMatrix
+        agentConfigs={agentConfigs}
+        agentMetricsMap={agentMetricsMap}
+      />
 
       {/* VISUAL PERFORMANCE HEATMAP */}
       <AgentPerformanceHeatmap
