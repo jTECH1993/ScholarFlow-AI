@@ -35,6 +35,7 @@ import {
 import ReactMarkdown from 'react-markdown';
 import { AgentCollaborationGraph } from './AgentCollaborationGraph';
 import { AgentPerformanceHeatmap } from './AgentPerformanceHeatmap';
+import { GlobalResearchInsightPanel } from './GlobalResearchInsightPanel';
 import { ResearchKnowledgeGraph } from './ResearchKnowledgeGraph';
 import { PresetLibraryModal, PipelinePreset } from './PresetLibraryModal';
 import { SessionMemoryManagerModal } from './SessionMemoryManagerModal';
@@ -1307,6 +1308,22 @@ export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
       <AgentPerformanceHeatmap
         agentConfigs={agentConfigs}
         agentMetricsMap={agentMetricsMap}
+      />
+
+      {/* GLOBAL RESEARCH INSIGHT PANEL */}
+      <GlobalResearchInsightPanel
+        allSessionsMemory={
+          allSessions.reduce((acc, s) => {
+            try {
+              const mem = localStorage.getItem(`scholarflow_session_${s.id}_memory`);
+              if (mem) acc[s.id] = JSON.parse(mem);
+            } catch {}
+            return acc;
+          }, {} as Record<string, SessionLongTermMemory>)
+        }
+        allSessionsList={allSessions}
+        activeDomain={selectedDomain}
+        onSelectSession={handleSelectSession}
       />
 
       {/* STEP-BY-STEP REAL-TIME EXECUTION LOG PANEL */}
