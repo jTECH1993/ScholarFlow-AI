@@ -366,10 +366,11 @@ ScholarFlow AI features a **Multi-Agent Collaboration Architecture** where **5 s
 
 ### 🎨 Visual Agent Collaboration & Data Transfer Flow Graph
 ScholarFlow AI includes an interactive **D3 / SVG Collaboration Flow Graph** displaying real-time data streaming along Bezier paths:
+- **Corpus Density Heatmap Overlay**: Toggle a visual density overlay on top of the graph that renders color-coded SVG aura fields showing sub-domain citation density (*Optoelectronic PPG & Hemodynamics 38%*, *Millimeter-Wave FMCW Radar 28%*, *Deep Learning Waveform Denoising 18%*, *Clinical Protocols & FDA Standards 16%*).
 - **Clickable Agent Nodes & Deep-Dive Modal**: Click on any agent node in the graph to open an **Agent Deep-Dive Modal** displaying their system prompt directives, active memory buffers (context window, episodic memory, vector indices), and step-by-step reasoning traces.
 - **Explicit Data Transfer Payload Badges**: Edge buttons showing exact information passed (`📚 Retrieved Chunks`, `⚖️ Experimental Audits`, `⚡ Controversy Map`, `🧠 Synthesized Thesis`, `🛡️ Verified Scorecard`).
 - **Data Transfer Inspector**: Interactive panel displaying live content previews, data volume metrics (e.g., `6 Chunks • 14.2 KB`), and data schema keys.
-- **Dual View Modes**: Switch between **SVG Flow Graph View** and **Data Transfer Matrix View** for granular pipeline auditing.
+- **Tri-View Modes**: Switch between **SVG Flow Graph View**, **Data Transfer Matrix View**, and **Corpus Density Heatmap View**.
 
 ---
 
@@ -544,7 +545,7 @@ ScholarFlow AI enforces strict code quality and compilation checks:
 - **ScholarFlow AI Title Update**: Updated title to **ScholarFlow AI — Multi-Agent Research Intelligence System** across HTML, metadata, and app headers.
 - **Collaborative Multi-Agent Swarm**: Built a 5-agent AI pipeline (*Literature Retriever, Methodology Auditor, Consensus Analyst, Synthesizer, Validator*) with per-agent tasks and fallback execution logic.
 - **Clickable Agent Nodes & Deep-Dive Inspection**: Users can click any agent node in the SVG collaboration flow graph to view system prompt directives, active memory context windows, and internal chain-of-thought reasoning streams.
-- **Visual Collaboration Flow Graph & Data Transfer Payloads**: Added an interactive SVG flow graph rendering Bezier paths, glowing active particles, and explicit Data Transfer Payload badges (`Retrieved Chunks`, `Experimental Audits`, `Controversy Map`, `Synthesized Review`, `Verified Scorecard`) with click-to-inspect data schemas.
+- **Visual Collaboration Flow Graph & Corpus Density Heatmap Overlay**: Added an interactive SVG flow graph rendering Bezier paths, glowing active particles, explicit Data Transfer Payload badges (`Retrieved Chunks`, `Experimental Audits`, `Controversy Map`, `Synthesized Review`, `Verified Scorecard`), and sub-domain citation density heatmap overlays (*PPG Hemodynamics 38%*, *FMCW Radar 28%*, *Deep Learning 18%*, *Clinical Standards 16%*).
 - **Visual Agent Performance Latency Heatmap**: Interactive color-gradient matrix showing execution latencies across past research sessions with Latency, Success Rate %, and Efficiency views.
 - **Pre-Configured Swarm Preset Library**: 1-click pipeline launcher for *Systematic Literature Review*, *Clinical Protocol Validator*, *Hypothesis Stress-Tester*, *Benchmark Gap Matrix*, and *Interdisciplinary Synthesis*.
 - **PDF Research Audit Report Exporter**: Formats and exports audit reports containing telemetry tables, data transfer matrices, log traces, quality scorecards, and manuscript previews with native browser print/save triggers.

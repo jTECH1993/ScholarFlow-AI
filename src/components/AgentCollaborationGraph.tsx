@@ -17,7 +17,9 @@ import {
   BarChart3,
   Check,
   FileCode2,
-  List
+  List,
+  Flame,
+  PieChart
 } from 'lucide-react';
 import { 
   AgentId, 
@@ -26,6 +28,65 @@ import {
   AgentPerformanceMetrics 
 } from '../types';
 import { AgentDeepDiveModal } from './AgentDeepDiveModal';
+
+export interface CorpusSubDomainDensity {
+  id: string;
+  subDomainName: string;
+  citationPercentage: number;
+  citationCount: number;
+  colorHex: string;
+  bgClass: string;
+  borderClass: string;
+  citedByAgentIds: AgentId[];
+  keyTopics: string[];
+}
+
+export const SUBDOMAIN_DENSITIES: CorpusSubDomainDensity[] = [
+  {
+    id: 'ppg-hemodynamics',
+    subDomainName: 'Optoelectronic PPG & Hemodynamics',
+    citationPercentage: 38,
+    citationCount: 14,
+    colorHex: '#10b981',
+    bgClass: 'bg-emerald-500/20 text-emerald-300',
+    borderClass: 'border-emerald-500/40',
+    citedByAgentIds: ['retrieval-scout', 'methodology-auditor', 'synthesis-author'],
+    keyTopics: ['Green/IR Photoplethysmography', 'Pulse Transit Time (PTT)', 'Volumetric Blood Absorption', 'Fitzpatrick Skin Phototypes']
+  },
+  {
+    id: 'fmcw-radar',
+    subDomainName: 'Millimeter-Wave FMCW Radar Sensing',
+    citationPercentage: 28,
+    citationCount: 10,
+    colorHex: '#6366f1',
+    bgClass: 'bg-indigo-500/20 text-indigo-300',
+    borderClass: 'border-indigo-500/40',
+    citedByAgentIds: ['retrieval-scout', 'consensus-analyst', 'peer-reviewer'],
+    keyTopics: ['60 GHz Phase Shift Tracking', 'Contactless Chest Displacement', 'Micro-Doppler Spectrograms', 'MIMO Array Beamforming']
+  },
+  {
+    id: 'deep-learning',
+    subDomainName: 'Deep Learning & Waveform Denoising',
+    citationPercentage: 18,
+    citationCount: 7,
+    colorHex: '#a855f7',
+    bgClass: 'bg-purple-500/20 text-purple-300',
+    borderClass: 'border-purple-500/40',
+    citedByAgentIds: ['methodology-auditor', 'synthesis-author', 'peer-reviewer'],
+    keyTopics: ['1D CNN Feature Extractors', 'Transformer Spectrogram Masking', 'Kalman Filter Denoising', 'Self-Attention RAG']
+  },
+  {
+    id: 'clinical-protocols',
+    subDomainName: 'Clinical Trial Protocols & FDA Standards',
+    citationPercentage: 16,
+    citationCount: 6,
+    colorHex: '#f59e0b',
+    bgClass: 'bg-amber-500/20 text-amber-300',
+    borderClass: 'border-amber-500/40',
+    citedByAgentIds: ['methodology-auditor', 'peer-reviewer'],
+    keyTopics: ['12-Lead ECG Holter Standards', 'AAMI Cuffless Blood Pressure Protocols', 'MAE/RMSE Clinical Error Bounds', 'FDA CE Validation']
+  }
+];
 
 interface AgentCollaborationGraphProps {
   agentConfigs: Record<AgentId, AgentConfig>;
@@ -43,7 +104,8 @@ export const AgentCollaborationGraph: React.FC<AgentCollaborationGraphProps> = (
   agentMetricsMap,
 }) => {
   const [selectedEdgeIndex, setSelectedEdgeIndex] = useState<number | null>(0);
-  const [viewTab, setViewTab] = useState<'graph' | 'matrix'>('graph');
+  const [viewTab, setViewTab] = useState<'graph' | 'matrix' | 'density'>('graph');
+  const [showDensityOverlay, setShowDensityOverlay] = useState<boolean>(true);
   const [deepDiveAgentId, setDeepDiveAgentId] = useState<AgentId | null>(null);
 
   // Ordered list of 5 agents in the pipeline
@@ -118,7 +180,7 @@ export const AgentCollaborationGraph: React.FC<AgentCollaborationGraphProps> = (
           </div>
           <div>
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <span>Visual Agent Collaboration & Data Transfer Flow Graph</span>
+              <span>Visual Agent Collaboration & Corpus Density Graph</span>
               {isRunning && (
                 <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-mono animate-pulse">
                   ● Payload Streaming Active
@@ -126,13 +188,26 @@ export const AgentCollaborationGraph: React.FC<AgentCollaborationGraphProps> = (
               )}
             </h2>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              Interactive flow diagram mapping inter-agent data transfer payloads (Retrieved Chunks, Audits, Synthesis, Scorecard)
+              Interactive flow diagram mapping inter-agent data transfers and sub-domain corpus citation density heatmaps
             </p>
           </div>
         </div>
 
         {/* View Mode Toggle Controls */}
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowDensityOverlay(!showDensityOverlay)}
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1.5 ${
+              showDensityOverlay
+                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'
+            }`}
+          >
+            <Flame className="w-3.5 h-3.5" />
+            <span>{showDensityOverlay ? 'Density Heatmap ON' : 'Density Heatmap OFF'}</span>
+          </button>
+
           <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-bold">
             <button
               type="button"
@@ -157,7 +232,20 @@ export const AgentCollaborationGraph: React.FC<AgentCollaborationGraphProps> = (
               }`}
             >
               <List className="w-3.5 h-3.5" />
-              <span>Data Transfer Matrix</span>
+              <span>Data Transfers</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setViewTab('density')}
+              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+                viewTab === 'density'
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              <Flame className="w-3.5 h-3.5" />
+              <span>Corpus Density</span>
             </button>
           </div>
         </div>
@@ -166,6 +254,32 @@ export const AgentCollaborationGraph: React.FC<AgentCollaborationGraphProps> = (
       {/* VIEW 1: SVG COLLABORATION FLOW GRAPH */}
       {viewTab === 'graph' && (
         <div className="space-y-4">
+          
+          {/* Sub-Domain Density Legend Bar (When Overlay ON) */}
+          {showDensityOverlay && (
+            <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2">
+                <Flame className="w-4 h-4 text-amber-500 animate-pulse" />
+                <span className="font-bold text-white uppercase text-[10px] tracking-wider font-mono">
+                  Active Corpus Sub-Domain Citation Density Overlay:
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono">
+                {SUBDOMAIN_DENSITIES.map((sub) => (
+                  <div
+                    key={sub.id}
+                    className={`px-2.5 py-1 rounded-lg border flex items-center gap-1.5 ${sub.bgClass} ${sub.borderClass}`}
+                  >
+                    <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: sub.colorHex }} />
+                    <span className="font-bold">{sub.subDomainName.split(' ')[0]}</span>
+                    <span className="font-extrabold">{sub.citationPercentage}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="relative overflow-x-auto p-3 bg-slate-950 rounded-2xl border border-slate-800 shadow-inner">
             <svg
               viewBox="0 0 980 230"
@@ -208,7 +322,28 @@ export const AgentCollaborationGraph: React.FC<AgentCollaborationGraphProps> = (
                 >
                   <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569" />
                 </marker>
+
+                {/* Sub-Domain Glow Blur Filters */}
+                <filter id="density-glow-ppg" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="18" result="blur" />
+                </filter>
+                <filter id="density-glow-radar" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="18" result="blur" />
+                </filter>
               </defs>
+
+              {/* CORPUS DENSITY HEATMAP OVERLAY FIELDS (Behind Nodes) */}
+              {showDensityOverlay && (
+                <g className="opacity-45 pointer-events-none">
+                  {/* PPG Density Aura */}
+                  <circle cx={nodePositions[0]} cy={nodeY} r="75" fill="#10b981" filter="url(#density-glow-ppg)" />
+                  <circle cx={nodePositions[1]} cy={nodeY} r="65" fill="#10b981" filter="url(#density-glow-ppg)" />
+                  {/* FMCW Radar Density Aura */}
+                  <circle cx={nodePositions[2]} cy={nodeY} r="70" fill="#6366f1" filter="url(#density-glow-radar)" />
+                  <circle cx={nodePositions[3]} cy={nodeY} r="80" fill="#a855f7" filter="url(#density-glow-radar)" />
+                  <circle cx={nodePositions[4]} cy={nodeY} r="60" fill="#f59e0b" filter="url(#density-glow-ppg)" />
+                </g>
+              )}
 
               {/* 1. DRAW DIRECTED BEZIER PATH EDGES BETWEEN AGENT NODES */}
               {agentOrder.map((agentItem, idx) => {
@@ -471,7 +606,7 @@ export const AgentCollaborationGraph: React.FC<AgentCollaborationGraphProps> = (
         </div>
       )}
 
-      {/* VIEW 2: DATA TRANSFER MATRIX TAB */}
+      {/* VIEW 2: DATA TRANSFERS MATRIX */}
       {viewTab === 'matrix' && (
         <div className="space-y-3">
           <div className="grid grid-cols-1 gap-3">
@@ -508,21 +643,65 @@ export const AgentCollaborationGraph: React.FC<AgentCollaborationGraphProps> = (
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                     {msg?.content ? `${msg.content.slice(0, 180)}...` : payload.summary}
                   </p>
-
-                  <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap gap-1.5 text-[10px] font-mono">
-                    <span className="text-slate-400 font-bold">Schema Keys:</span>
-                    {payload.schema.map((key, i) => (
-                      <span key={i} className="px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800">
-                        {key}
-                      </span>
-                    ))}
-                  </div>
                 </div>
               );
             })}
           </div>
         </div>
       )}
+
+      {/* VIEW 3: CORPUS SUB-DOMAIN DENSITY HEATMAP BREAKDOWN */}
+      {viewTab === 'density' && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {SUBDOMAIN_DENSITIES.map((sub) => (
+              <div
+                key={sub.id}
+                className={`p-4 rounded-2xl border ${sub.bgClass} ${sub.borderClass} space-y-3 relative overflow-hidden`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                    <Flame className="w-4 h-4 text-amber-500" />
+                    <span>{sub.subDomainName}</span>
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full font-mono font-bold text-xs bg-slate-900/80 text-white">
+                    {sub.citationPercentage}% Density ({sub.citationCount} Chunks)
+                  </span>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{ width: `${sub.citationPercentage}%`, backgroundColor: sub.colorHex }}
+                  />
+                </div>
+
+                {/* Key Topics List */}
+                <div className="space-y-1 font-mono text-[10px] text-slate-700 dark:text-slate-300">
+                  <span className="font-bold uppercase text-[9px] text-slate-400">Cited Sub-Topics:</span>
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {sub.keyTopics.map((topic, i) => (
+                      <span key={i} className="px-2 py-0.5 rounded bg-white/60 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800">
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Cited By Agents */}
+                <div className="pt-2 border-t border-slate-200/40 dark:border-slate-800/40 flex items-center justify-between text-[10px]">
+                  <span className="text-slate-400 font-bold">Actively Cited By Swarm Agents:</span>
+                  <div className="flex items-center gap-1 font-bold text-slate-800 dark:text-slate-200">
+                    {sub.citedByAgentIds.map(aid => agentConfigs[aid]?.name.split(' ')[0]).join(', ')}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* AGENT DEEP-DIVE MODAL */}
       {deepDiveAgentId && agentConfigs[deepDiveAgentId] && (
         <AgentDeepDiveModal
