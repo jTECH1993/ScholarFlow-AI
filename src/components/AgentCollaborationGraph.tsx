@@ -25,6 +25,7 @@ import {
   AgentMessage, 
   AgentPerformanceMetrics 
 } from '../types';
+import { AgentDeepDiveModal } from './AgentDeepDiveModal';
 
 interface AgentCollaborationGraphProps {
   agentConfigs: Record<AgentId, AgentConfig>;
@@ -43,6 +44,7 @@ export const AgentCollaborationGraph: React.FC<AgentCollaborationGraphProps> = (
 }) => {
   const [selectedEdgeIndex, setSelectedEdgeIndex] = useState<number | null>(0);
   const [viewTab, setViewTab] = useState<'graph' | 'matrix'>('graph');
+  const [deepDiveAgentId, setDeepDiveAgentId] = useState<AgentId | null>(null);
 
   // Ordered list of 5 agents in the pipeline
   const agentOrder: { id: AgentId; displayName: string; role: string; avatar: string }[] = [
@@ -327,7 +329,7 @@ export const AgentCollaborationGraph: React.FC<AgentCollaborationGraphProps> = (
                       }
                       strokeWidth={isActive ? '3' : '2'}
                       className="transition-all cursor-pointer hover:scale-108"
-                      onClick={() => setSelectedEdgeIndex(idx < 4 ? idx : 4)}
+                      onClick={() => setDeepDiveAgentId(agentItem.id)}
                     />
 
                     {/* Avatar Icon */}
@@ -520,6 +522,16 @@ export const AgentCollaborationGraph: React.FC<AgentCollaborationGraphProps> = (
             })}
           </div>
         </div>
+      )}
+      {/* AGENT DEEP-DIVE MODAL */}
+      {deepDiveAgentId && agentConfigs[deepDiveAgentId] && (
+        <AgentDeepDiveModal
+          isOpen={!!deepDiveAgentId}
+          onClose={() => setDeepDiveAgentId(null)}
+          agentConfig={agentConfigs[deepDiveAgentId]}
+          message={messages.find((m) => m.fromAgentId === deepDiveAgentId)}
+          metrics={agentMetricsMap[deepDiveAgentId]}
+        />
       )}
     </div>
   );

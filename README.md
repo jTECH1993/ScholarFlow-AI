@@ -366,9 +366,40 @@ ScholarFlow AI features a **Multi-Agent Collaboration Architecture** where **5 s
 
 ### 🎨 Visual Agent Collaboration & Data Transfer Flow Graph
 ScholarFlow AI includes an interactive **D3 / SVG Collaboration Flow Graph** displaying real-time data streaming along Bezier paths:
+- **Clickable Agent Nodes & Deep-Dive Modal**: Click on any agent node in the graph to open an **Agent Deep-Dive Modal** displaying their system prompt directives, active memory buffers (context window, episodic memory, vector indices), and step-by-step reasoning traces.
 - **Explicit Data Transfer Payload Badges**: Edge buttons showing exact information passed (`📚 Retrieved Chunks`, `⚖️ Experimental Audits`, `⚡ Controversy Map`, `🧠 Synthesized Thesis`, `🛡️ Verified Scorecard`).
 - **Data Transfer Inspector**: Interactive panel displaying live content previews, data volume metrics (e.g., `6 Chunks • 14.2 KB`), and data schema keys.
 - **Dual View Modes**: Switch between **SVG Flow Graph View** and **Data Transfer Matrix View** for granular pipeline auditing.
+
+---
+
+### 🔥 Visual Agent Performance Latency Heatmap
+Includes an interactive color-gradient performance matrix:
+- **Gradient Metrics**: Displays execution latency (s) across historical research sessions (`Session #8` down to `Session #3`) with color scales (`<1.2s` Emerald, `1.2s-1.5s` Indigo, `1.5s-1.9s` Amber, `>1.9s` Rose).
+- **Mode Controls**: Toggle between **Latency (ms)**, **Success Rate %**, and **Efficiency Score** views.
+
+---
+
+### 📚 Pre-Configured Swarm Preset Library
+Includes a **Preset Library Modal** for instant 1-click pipeline initialization:
+- **Pre-Configured Workflows**: *Systematic Literature Review*, *Clinical Protocol Validator*, *Research Hypothesis Stress-Tester*, *Cross-Corpus Benchmark Matrix*, and *Interdisciplinary Qualitative Synthesizer*.
+- **Pre-set Parameters**: Automatically configures research inquiry prompts, agent execution sequences, and model engine defaults.
+
+---
+
+### 🕸️ Interactive Research Corpus Knowledge Graph
+ScholarFlow AI includes an interactive **Knowledge Graph Canvas** (`ResearchKnowledgeGraph.tsx`) mapping entity relationships extracted across the research corpus:
+- **Interactive Concept Traversal**: Click any concept node (`60GHz FMCW Radar`, `Optical PPG`, `Pulse Wave Velocity`, `Deep Transformer RAG`, `Ambulatory Motion Artifacts`) to highlight its degree-1 connected neighbors and relationship edges.
+- **Typed Relationship Triples**: Maps relationships such as `[FMCW Radar] ──(measures)──> [Pulse Wave Velocity]`, `[Optical PPG] ──(vulnerable to)──> [Skin Phototype Bias]`, and `[Transformer RAG] ──(filters out)──> [Motion Artifacts]`.
+- **Entity Category Filtering & Search**: Filter by `Technology`, `Metric`, `Algorithm`, `Threat`, and `Standard`, or search concepts in real time.
+- **Dual View Modes**: Switch between the **SVG Knowledge Graph Canvas** and an **Entity Triples Table View**.
+
+---
+
+### 📄 Export PDF Research Audit Report
+Generate formal PDF research reports:
+- **Comprehensive Audit Documentation**: Includes Audit Ref #, prompt metadata, agent latency telemetry tables, data transfer payload matrices, full execution log traces, peer review scorecards, and executive synthesis previews.
+- **1-Click Print & Save**: Triggers native browser print and PDF export dialogs.
 
 ---
 
@@ -512,8 +543,11 @@ ScholarFlow AI enforces strict code quality and compilation checks:
 ## 📄 Summary of Recent System Refactoring
 - **ScholarFlow AI Title Update**: Updated title to **ScholarFlow AI — Multi-Agent Research Intelligence System** across HTML, metadata, and app headers.
 - **Collaborative Multi-Agent Swarm**: Built a 5-agent AI pipeline (*Literature Retriever, Methodology Auditor, Consensus Analyst, Synthesizer, Validator*) with per-agent tasks and fallback execution logic.
+- **Clickable Agent Nodes & Deep-Dive Inspection**: Users can click any agent node in the SVG collaboration flow graph to view system prompt directives, active memory context windows, and internal chain-of-thought reasoning streams.
 - **Visual Collaboration Flow Graph & Data Transfer Payloads**: Added an interactive SVG flow graph rendering Bezier paths, glowing active particles, and explicit Data Transfer Payload badges (`Retrieved Chunks`, `Experimental Audits`, `Controversy Map`, `Synthesized Review`, `Verified Scorecard`) with click-to-inspect data schemas.
-- **Agent Performance & Execution Time Summary Card**: Integrated real-time tracking of agent execution latencies (ms/s) and success rates %, along with overall Swarm KPIs and fastest/slowest agent metrics.
+- **Visual Agent Performance Latency Heatmap**: Interactive color-gradient matrix showing execution latencies across past research sessions with Latency, Success Rate %, and Efficiency views.
+- **Pre-Configured Swarm Preset Library**: 1-click pipeline launcher for *Systematic Literature Review*, *Clinical Protocol Validator*, *Hypothesis Stress-Tester*, *Benchmark Gap Matrix*, and *Interdisciplinary Synthesis*.
+- **PDF Research Audit Report Exporter**: Formats and exports audit reports containing telemetry tables, data transfer matrices, log traces, quality scorecards, and manuscript previews with native browser print/save triggers.
 - **Step-by-Step Execution Log Panel**: Real-time tracking of pipeline steps (`1/5` to `5/5`) with Step Timeline and Monospace Terminal Trace view modes.
 - **Local Ollama & Multi-Model Integration**: Full support for Local Ollama models (`llama3.2`, `mistral`, `deepseek-r1`, `qwen2.5`, `gemma2`) assigned per-agent or globally with 1-click presets.
 - **Universal Enterprise Authentication**: Standardized multi-tenant registration, login, and password recovery via Firebase Auth without hardcoded accounts.

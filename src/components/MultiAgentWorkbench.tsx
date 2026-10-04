@@ -31,7 +31,9 @@ import {
 import ReactMarkdown from 'react-markdown';
 import { AgentCollaborationGraph } from './AgentCollaborationGraph';
 import { AgentPerformanceHeatmap } from './AgentPerformanceHeatmap';
+import { ResearchKnowledgeGraph } from './ResearchKnowledgeGraph';
 import { PresetLibraryModal, PipelinePreset } from './PresetLibraryModal';
+import { exportResearchAuditReportPDF } from '../services/pdfReportExporter';
 import { 
   AgentId, 
   AgentConfig, 
@@ -656,6 +658,28 @@ export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             <button
               type="button"
+              onClick={() => {
+                const activeTask = MULTI_AGENT_TASKS.find((t) => t.id === selectedTaskId) || MULTI_AGENT_TASKS[0];
+                exportResearchAuditReportPDF({
+                  title: activeTask.title,
+                  userQuery,
+                  domainId: selectedDomain,
+                  agentConfigs,
+                  agentMetricsMap,
+                  executionLogs,
+                  messages,
+                  peerReviewReport,
+                  finalSynthesis,
+                });
+              }}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-all shadow-md active:scale-98"
+            >
+              <Download className="w-4 h-4 text-white" />
+              <span>Export PDF Audit Report</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setIsPresetModalOpen(true)}
               className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold transition-all shadow-md active:scale-98"
             >
@@ -1191,6 +1215,9 @@ export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
         agentMetricsMap={agentMetricsMap}
       />
 
+      {/* RESEARCH CORPUS KNOWLEDGE GRAPH */}
+      <ResearchKnowledgeGraph />
+
       {/* Swarm Live Flow Visualizer & Messages */}
       {(isRunning || messages.length > 0) && (
         <div className="space-y-6">
@@ -1401,6 +1428,28 @@ export const MultiAgentWorkbench: React.FC<MultiAgentWorkbenchProps> = ({
 
             {/* Export & Copy Controls */}
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const activeTask = MULTI_AGENT_TASKS.find((t) => t.id === selectedTaskId) || MULTI_AGENT_TASKS[0];
+                  exportResearchAuditReportPDF({
+                    title: activeTask.title,
+                    userQuery,
+                    domainId: selectedDomain,
+                    agentConfigs,
+                    agentMetricsMap,
+                    executionLogs,
+                    messages,
+                    peerReviewReport,
+                    finalSynthesis,
+                  });
+                }}
+                className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow-xs transition-all flex items-center gap-1.5"
+              >
+                <Download className="w-3.5 h-3.5 text-white" />
+                <span>Export PDF Audit</span>
+              </button>
+
               <button
                 type="button"
                 onClick={handleCopySynthesis}
